@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ChartLens V7 — Chart Analysis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><div class="brand">Chart<span>Lens</span><small>AI MARKET ANALYSIS</small></div><div class="badge">V7 · Educational Analysis</div></div>
+
+  <section class="hero">
+    <div class="heroCopy">
+      <div class="eyebrow">AI-Powered Chart Intelligence</div>
+      <h1>SEE THE MARKET.<br><span>UNDERSTAND THE MOVE.</span></h1>
+      <p>Advanced AI analysis that detects market structure, key levels, patterns, and momentum to give you a clearer edge.</p>
+      <div class="heroNote">Visual evidence only · Ambiguous features are reported as uncertain rather than guessed.</div>
+    </div>
+    <div class="heroVisual" aria-hidden="true">
+      <div class="gridGlow"></div><div class="signal s1"></div><div class="signal s2"></div><div class="signal s3"></div>
+      <div class="tag t1">MARKET STRUCTURE</div><div class="tag t2">KEY LEVEL</div><div class="tag t3">DEMAND ZONE</div>
+      <div class="aiOrb"><div class="aiCore">AI</div></div>
+    </div>
+  </section>
+
+  <div class="card">
+    <div class="row">
+      <div><label class="title">Pair / Asset</label><select id="asset" class="select"><option>XAU/USD</option><option>EUR/USD</option><option>GBP/USD</option><option>BTC/USD</option><option>ETH/USD</option><option>Other</option></select></div>
+      <div><label class="title">Timeframe</label><select id="timeframe" class="select"><option>1 Minute</option><option>5 Minutes</option><option>15 Minutes</option><option>30 Minutes</option><option>1 Hour</option><option>4 Hours</option><option>Daily</option></select></div>
+    </div>
+    <div class="section"><label class="title">Chart image</label>
+<section class="analysis-controls" aria-label="Chart analysis settings">
+  <div class="control-grid">
+    <label>
+      <span>Pair / Asset</span>
+      <select id="pairAsset" name="pairAsset">
+        <option>XAU/USD</option>
+        <option>EUR/USD</option>
+        <option>GBP/USD</option>
+        <option>USD/JPY</option>
+        <option>BTC/USD</option>
+      </select>
+    </label>
+    <label>
+      <span>Timeframe</span>
+      <select id="timeframe" name="timeframe">
+        <option>1 Minute</option>
+        <option>5 Minutes</option>
+        <option>15 Minutes</option>
+        <option>1 Hour</option>
+        <option>4 Hours</option>
+        <option>1 Day</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="analysis-focus">
+    <h3>Analysis Focus</h3>
+    <div class="focus-list">
+      <label class="focus-item"><input type="checkbox" name="focus" value="market_structure" checked><span>📊</span> Market Structure</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="key_levels" checked><span>🎯</span> Key Levels</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="chart_patterns" checked><span>◈</span> Chart Patterns</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="momentum" checked><span>⚡</span> Momentum</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="supply_demand" checked><span>🛡️</span> Supply / Demand</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="candlestick" checked><span>◐</span> Candlestick Behaviour</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="moving_averages" checked><span>〽</span> Moving Averages, if visible</label>
+      <label class="focus-item"><input type="checkbox" name="focus" value="liquidity" checked><span>◉</span> Liquidity / Sweeps</label>
+    </div>
+  </div>
+</section>
+
+<input id="image" class="file" type="file" accept="image/png,image/jpeg,image/webp"><img id="preview" class="preview" alt="Chart preview"></div>
+    <div class="section"><label class="title">Analysis focus</label><div class="focus" id="focuses">
+      <label class="check"><input type="checkbox" value="Market structure" checked>📊 Market structure</label>
+      <label class="check"><input type="checkbox" value="Support / resistance" checked>🎯 Support / resistance</label>
+      <label class="check"><input type="checkbox" value="Trend direction" checked>↗ Trend direction</label>
+      <label class="check"><input type="checkbox" value="Liquidity / sweeps" checked>◌ Liquidity / sweeps</label>
+      <label class="check"><input type="checkbox" value="Supply / demand zones" checked>🛡 Supply / demand zones</label>
+      <label class="check"><input type="checkbox" value="BOS / CHoCH" checked>⇄ BOS / CHoCH</label>
+      <label class="check"><input type="checkbox" value="Candlestick behaviour" checked>▥ Candlestick behaviour</label>
+      <label class="check"><input type="checkbox" value="Chart patterns" checked>◇ Chart patterns</label>
+      <label class="check"><input type="checkbox" value="Moving averages, if visible" checked>〰 Moving averages, if visible</label>
+      <label class="check"><input type="checkbox" value="Momentum / volatility, if visible" checked>⚡ Momentum / volatility, if visible</label>
+      <label class="check"><input type="checkbox" value="Volume, only if visible" checked>▥ Volume, only if visible</label>
+      <label class="check"><input type="checkbox" value="Key price levels" checked>🎯 Key price levels</label>
+    </div></div>
+    <button id="analyze">Analyze Chart</button><div id="status" class="status">Upload a chart image to begin.</div>
+  </div>
+
+  <div id="results" class="card" style="display:none"></div>
+  <div class="foot">Educational analysis only. ChartLens does not guarantee market outcomes, provide personalized financial advice, or replace independent research and risk management.</div>
+</div>
+
+<script>
+const imageInput=document.getElementById('image');
+const preview=document.getElementById('preview');
+const status=document.getElementById('status');
+const results=document.getElementById('results');
+const button=document.getElementById('analyze');
+
+imageInput.addEventListener('change',()=>{
+  const f=imageInput.files[0];
+  if(!f){preview.style.display='none';return}
+  preview.src=URL.createObjectURL(f); preview.style.display='block';
+  status.className='status'; status.textContent='Chart loaded. Ready to analyze.';
+});
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function section(title,value){return `<div class="section"><h3>${esc(title)}</h3><p>${esc(value||'Not available from the image.')}</p></div>`}
+
+
+async function compressImage(file, maxSide=1600, quality=0.82){
+  const src=await new Promise((resolve,reject)=>{
+    const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
+  });
+  const img=await new Promise((resolve,reject)=>{
+    const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=src;
+  });
+  const scale=Math.min(1, maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+  canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext('2d',{alpha:false});
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',quality);
+}
+
+function render(r){
+  const conf=(r.confidence||'medium').toLowerCase();
+  const cls=conf==='high'?'high':conf==='low'?'low':'medium';
+  const label=conf==='high'?'🟢 High confidence':conf==='low'?'🔴 Low confidence':'🟡 Moderate confidence';
+  const score=r.confidence_score!=null?Number(r.confidence_score):null;
+  results.style.display='block';
+  const row=(icon,title,value,scoreValue)=>`<div class="analysisRow"><div class="analysisIcon">${icon}</div><div><div class="analysisLabel">${esc(title)}</div><div class="analysisText">${esc(value||'Not available from the image.')}</div></div><div class="analysisScore">${scoreValue!=null?`Confidence<span>${esc(scoreValue)}%</span>`:'Evidence<span>—</span>'}</div></div>`;
+  results.innerHTML=
+    `<div class="resultsHead"><div class="resultsTitle">AI Chart Analysis</div><div class="confidence ${cls}">${label}${score!=null?' — '+esc(score)+'%':''}</div></div>`+
+    `<div class="section"><h3>Overall assessment</h3><p>${esc(r.overall_assessment||'Not available from the image.')}</p></div>`+
+    `<div class="grid" style="margin-top:14px">`+
+      `<div class="metric"><b>Asset</b>${esc(r.asset)}</div><div class="metric"><b>Timeframe</b>${esc(r.timeframe)}</div><div class="metric"><b>Bias</b>${esc(r.bias)}</div><div class="metric"><b>Image quality</b>${esc(r.image_quality)}</div>`+
+    `</div>`+
+    `<div class="section"><h3>Detected features</h3>`+
+      row('📊','Market Structure',r.market_structure)+
+      row('🎯','Key Levels',r.key_levels)+
+      row('◇','Chart Patterns',r.chart_patterns,r.pattern_confidence)+
+      row('⚡','Momentum',r.momentum_volatility)+
+      row('🛡','Supply & Demand',r.supply_demand)+
+    `</div>`+
+    section('Trend',r.trend)+section('Support / resistance',r.support_resistance)+section('Liquidity / sweeps',r.liquidity)+section('BOS / CHoCH',r.bos_choch)+section('Candlestick behaviour',r.candlesticks)+section('Moving averages',r.moving_averages)+section('Volume',r.volume)+section('Scenario / confirmation',r.scenario)+section('Invalidation / caution',r.invalidation)+
+    `<div class="section"><h3>Overall AI confidence</h3><div class="overall"><div class="scoreRing">${score!=null?esc(score)+'%':'—'}<small>VISIBLE EVIDENCE</small></div><div><strong style="font-size:20px">${label}</strong><p style="margin-top:7px">Confidence reflects the model's confidence in identifying visible chart features. It is not a probability of trade success.</p></div></div></div>`+
+    `<div class="section"><h3>Educational note</h3><p>Analysis is limited to information readable in the uploaded chart. Missing, cropped or ambiguous information is reported as unavailable rather than guessed.</p></div>`;
+}
+
+button.addEventListener('click',async()=>{
+  const f=imageInput.files[0];
+  if(!f){status.className='status error';status.textContent='Please upload a chart image first.';return}
+  button.disabled=true; results.style.display='none';
+  status.className='status'; status.textContent='Analyzing chart…';
+  try{
+    const b64=await compressImage(f, 1600, 0.82);
+    const focus=[...document.querySelectorAll('#focuses input:checked')].map(x=>x.value);
+    const res=await fetch('/api/analyze',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:b64,asset:document.getElementById('asset').value,timeframe:document.getElementById('timeframe').value,focus})
+    });
+    const text=await res.text();
+    if(!text || !text.trim()){
+      throw new Error(`Analysis endpoint returned an empty response (HTTP ${res.status}). Check the Cloudflare Pages Function deployment and HF_TOKEN.`);
+    }
+    let data;
+    try{data=JSON.parse(text)}catch(e){
+      throw new Error(`Analysis endpoint returned an invalid response (HTTP ${res.status}). ${text.slice(0,220)}`);
+    }
+    if(!res.ok || data?.error){
+      throw new Error(data?.error || `Analysis request failed (HTTP ${res.status}).`);
+    }
+    if(!res.ok) throw new Error(data.error||'Analysis request failed.');
+    render(data); status.className='status'; status.textContent='Analysis complete.';
+  }catch(e){status.className='status error';status.textContent=e.message||'Analysis failed.'}
+  finally{button.disabled=false}
+});
+</script>
+</body>
+</html>
