@@ -1,40 +1,739 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ChartLens V7 — Chart Analysis</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChartLens — AI Chart Analysis</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #05070c;
+      --panel: #0b1018;
+      --panel2: #101722;
+      --border: rgba(255,255,255,.09);
+      --text: #f4f7fb;
+      --muted: #8d99a9;
+      --cyan: #55eee0;
+      --purple: #9274ff;
+      --green: #57e6a1;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(50,130,255,.12), transparent 35%),
+        radial-gradient(circle at 85% 10%, rgba(145,85,255,.14), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    /* NAV */
+
+    nav {
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: -.03em;
+      font-size: 20px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      color: #061016;
+      font-weight: 900;
+      box-shadow: 0 0 30px rgba(85,238,224,.18);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .nav-links a:hover {
+      color: white;
+    }
+
+    .nav-button {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: white;
+      padding: 10px 17px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* HERO */
+
+    .hero {
+      text-align: center;
+      padding: 95px 0 55px;
+      max-width: 900px;
+      margin: auto;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 13px;
+      border: 1px solid rgba(85,238,224,.22);
+      background: rgba(85,238,224,.06);
+      color: var(--cyan);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(44px, 7vw, 82px);
+      line-height: .98;
+      letter-spacing: -.065em;
+      margin-bottom: 24px;
+    }
+
+    h1 span {
+      background: linear-gradient(90deg, var(--cyan), #a78bff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      max-width: 690px;
+      margin: auto;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ANALYZER */
+
+    .analyzer {
+      max-width: 850px;
+      margin: 30px auto 100px;
+      padding: 10px;
+      border-radius: 24px;
+      background: linear-gradient(
+        135deg,
+        rgba(85,238,224,.18),
+        rgba(146,116,255,.15)
+      );
+    }
+
+    .analyzer-inner {
+      background: rgba(7,11,17,.96);
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      padding: 30px;
+    }
+
+    .analyzer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .analyzer-header h2 {
+      font-size: 21px;
+    }
+
+    .status {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dropzone {
+      min-height: 300px;
+      border: 1px dashed rgba(85,238,224,.4);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      background:
+        radial-gradient(circle, rgba(85,238,224,.06), transparent 60%);
+      transition: .2s;
+      overflow: hidden;
+    }
+
+    .dropzone:hover {
+      border-color: var(--cyan);
+      background-color: rgba(85,238,224,.04);
+    }
+
+    .upload-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 17px;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      color: var(--cyan);
+      background: rgba(85,238,224,.08);
+      margin-bottom: 18px;
+    }
+
+    .dropzone h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .dropzone p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    #chartInput {
+      display: none;
+    }
+
+    .preview {
+      display: none;
+      width: 100%;
+    }
+
+    .preview img {
+      width: 100%;
+      max-height: 450px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #05070b;
+    }
+
+    .analyze-button {
+      width: 100%;
+      border: 0;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 13px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+      color: #05070c;
+      font-weight: 900;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .analyze-button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .privacy {
+      text-align: center;
+      color: #687384;
+      font-size: 11px;
+      margin-top: 13px;
+    }
+
+    /* FEATURES */
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .section-title span {
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .15em;
+    }
+
+    .section-title h2 {
+      font-size: clamp(30px, 5vw, 48px);
+      letter-spacing: -.04em;
+      margin-top: 10px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 100px;
+    }
+
+    .feature {
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: linear-gradient(
+        145deg,
+        rgba(255,255,255,.035),
+        rgba(255,255,255,.012)
+      );
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      margin-bottom: 18px;
+    }
+
+    .feature h3 {
+      margin-bottom: 9px;
+    }
+
+    .feature p {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* ANALYSIS */
+
+    #analysis {
+      display: none;
+      margin-bottom: 100px;
+    }
+
+    .analysis-card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .analysis-top {
+      padding: 25px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .analysis-top h2 {
+      margin-top: 7px;
+    }
+
+    .confidence {
+      text-align: right;
+    }
+
+    .confidence strong {
+      font-size: 34px;
+      color: var(--cyan);
+    }
+
+    .confidence small {
+      display: block;
+      color: var(--muted);
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .analysis-item {
+      padding: 23px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .analysis-item:nth-child(odd) {
+      border-right: 1px solid var(--border);
+    }
+
+    .analysis-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 9px;
+    }
+
+    .analysis-item strong {
+      font-size: 16px;
+    }
+
+    footer {
+      padding: 35px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: #667181;
+      font-size: 12px;
+    }
+
+    @media(max-width: 700px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 65px;
+      }
+
+      .analyzer-inner {
+        padding: 18px;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .analysis-item:nth-child(odd) {
+        border-right: 0;
+      }
+
+      .analysis-top {
+        flex-direction: column;
+      }
+
+      .confidence {
+        text-align: left;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="topbar"><div class="brand">Chart<span>Lens</span><small>AI MARKET ANALYSIS</small></div><div class="badge">V7 · Educational Analysis</div></div>
 
-  <section class="hero">
-    <div class="heroCopy">
-      <div class="eyebrow">AI-Powered Chart Intelligence</div>
-      <h1>SEE THE MARKET.<br><span>UNDERSTAND THE MOVE.</span></h1>
-      <p>Advanced AI analysis that detects market structure, key levels, patterns, and momentum to give you a clearer edge.</p>
-      <div class="heroNote">Visual evidence only · Ambiguous features are reported as uncertain rather than guessed.</div>
-    </div>
-    <div class="heroVisual" aria-hidden="true">
-      <div class="gridGlow"></div><div class="signal s1"></div><div class="signal s2"></div><div class="signal s3"></div>
-      <div class="tag t1">MARKET STRUCTURE</div><div class="tag t2">KEY LEVEL</div><div class="tag t3">DEMAND ZONE</div>
-      <div class="aiOrb"><div class="aiCore">AI</div></div>
-    </div>
-  </section>
+  <div class="container">
 
-  <div class="card">
-    <div class="row">
-      <div><label class="title">Pair / Asset</label><select id="asset" class="select"><option>XAU/USD</option><option>EUR/USD</option><option>GBP/USD</option><option>BTC/USD</option><option>ETH/USD</option><option>Other</option></select></div>
-      <div><label class="title">Timeframe</label><select id="timeframe" class="select"><option>1 Minute</option><option>5 Minutes</option><option>15 Minutes</option><option>30 Minutes</option><option>1 Hour</option><option>4 Hours</option><option>Daily</option></select></div>
-    </div>
-    <div class="section"><label class="title">Chart image</label>
-<section class="analysis-controls" aria-label="Chart analysis settings">
-  <div class="control-grid">
-    <label>
-      <span>Pair / Asset</span>
-      <select id="pairAsset" name="pairAsset">
+    <nav>
+      <div class="brand">
+        <div class="brand-logo">✦</div>
+        CHARTLENS
+      </div>
+
+      <div class="nav-links">
+        <a href="#analyzer">Analyzer</a>
+        <a href="#features">Framework</a>
+        <a href="#pricing">Pricing</a>
+        <button class="nav-button">Sign in</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="eyebrow">AI-POWERED CHART INTELLIGENCE</div>
+
+      <h1>
+        SEE THE MARKET.<br>
+        <span>UNDERSTAND THE CHART.</span>
+      </h1>
+
+      <p>
+        Upload a chart and get a structured educational analysis of
+        market structure, important levels, patterns, momentum and
+        potential scenarios — explained clearly instead of hidden
+        behind vague AI predictions.
+      </p>
+    </section>
+
+    <section id="analyzer" class="analyzer">
+
+      <div class="analyzer-inner">
+
+        <div class="analyzer-header">
+          <div>
+            <h2>Chart Analyzer</h2>
+          </div>
+
+          <div class="status">● READY</div>
+        </div>
+
+        <label class="dropzone" for="chartInput">
+
+          <input
+            id="chartInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+          >
+
+          <div id="uploadContent">
+            <div class="upload-icon">＋</div>
+
+            <h3>Drop your chart here</h3>
+
+            <p>
+              PNG · JPG · WEBP · Tap to upload
+            </p>
+          </div>
+
+          <div id="preview" class="preview">
+            <img id="previewImage" alt="Uploaded chart preview">
+          </div>
+
+        </label>
+
+        <button
+          id="analyzeButton"
+          class="analyze-button"
+          disabled
+        >
+          Analyze Chart →
+        </button>
+
+        <div class="privacy">
+          Educational analysis only · No guaranteed predictions
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="features">
+
+      <div class="section-title">
+        <span>THE CHARTLENS FRAMEWORK</span>
+        <h2>A better way to read a chart.</h2>
+      </div>
+
+      <div class="feature-grid">
+
+        <article class="feature">
+          <div class="feature-icon">◈</div>
+          <h3>Market Structure</h3>
+          <p>
+            Identify visible structure, important swing points,
+            trend context and changes in market behavior.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">◎</div>
+          <h3>Key Levels</h3>
+          <p>
+            Highlight areas that deserve attention instead of
+            overwhelming you with dozens of meaningless lines.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">⌁</div>
+          <h3>Pattern Recognition</h3>
+          <p>
+            Examine recognizable chart structures and explain
+            what evidence supports or contradicts them.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">↗</div>
+          <h3>Momentum</h3>
+          <p>
+            Evaluate visible momentum and price behavior while
+            clearly separating observation from prediction.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">◉</div>
+          <h3>Confidence</h3>
+          <p>
+            Receive a transparent confidence assessment rather
+            than a fake guarantee of what happens next.
+          </p>
+        </article>
+
+        <article class="feature">
+          <div class="feature-icon">✦</div>
+          <h3>Explain the Read</h3>
+          <p>
+            Every important observation is explained so you can
+            learn how to interpret charts yourself.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+    <section id="analysis">
+
+      <div class="section-title">
+        <span>AI ANALYSIS</span>
+        <h2>Chart intelligence report</h2>
+      </div>
+
+      <div class="analysis-card">
+
+        <div class="analysis-top">
+          <div>
+            <small>OVERALL READ</small>
+            <h2 id="analysisHeadline">
+              Analysis ready
+            </h2>
+          </div>
+
+          <div class="confidence">
+            <strong id="confidenceValue">—</strong>
+            <small>confidence</small>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+
+          <div class="analysis-item">
+            <span>Market structure</span>
+            <strong id="structure">
+              Awaiting analysis
+            </strong>
+          </div>
+
+          <div class="analysis-item">
+            <span>Key levels</span>
+            <strong id="levels">
+              Awaiting analysis
+            </strong>
+          </div>
+
+          <div class="analysis-item">
+            <span>Pattern</span>
+            <strong id="pattern">
+              Awaiting analysis
+            </strong>
+          </div>
+
+          <div class="analysis-item">
+            <span>Momentum</span>
+            <strong id="momentum">
+              Awaiting analysis
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <footer>
+      ChartLens © 2026 · Educational chart analysis only.
+    </footer>
+
+  </div>
+
+<script>
+
+  const chartInput =
+    document.getElementById("chartInput");
+
+  const uploadContent =
+    document.getElementById("uploadContent");
+
+  const preview =
+    document.getElementById("preview");
+
+  const previewImage =
+    document.getElementById("previewImage");
+
+  const analyzeButton =
+    document.getElementById("analyzeButton");
+
+  const analysis =
+    document.getElementById("analysis");
+
+
+  /* IMAGE PREVIEW */
+
+  chartInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose a PNG, JPG or WEBP image.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (event) {
+
+      previewImage.src = event.target.result;
+
+      uploadContent.style.display = "none";
+      preview.style.display = "block";
+
+      analyzeButton.disabled = false;
+
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+
+  /* DEMO ANALYSIS */
+
+  analyzeButton.addEventListener("click", function () {
+
+    analysis.style.display = "block";
+
+    document.getElementById("analysisHeadline")
+      .textContent = "Chart uploaded successfully";
+
+    document.getElementById("confidenceValue")
+      .textContent = "—";
+
+    document.getElementById("structure")
+      .textContent = "Ready for AI analysis";
+
+    document.getElementById("levels")
+      .textContent = "Ready for AI analysis";
+
+    document.getElementById("pattern")
+      .textContent = "Ready for AI analysis";
+
+    document.getElementById("momentum")
+      .textContent = "Ready for AI analysis";
+
+    analysis.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  });
+
+</script>
+
+</body>
+                                            </html>      <select id="pairAsset" name="pairAsset">
         <option>XAU/USD</option>
         <option>EUR/USD</option>
         <option>GBP/USD</option>
