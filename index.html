@@ -1,1912 +1,1342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>ChartLens — AI Chart Intelligence</title>
-
-  <meta
-    name="description"
-    content="ChartLens provides structured educational chart analysis covering market structure, price location, patterns, momentum and key levels."
-  >
-
-  <style>
-    :root {
-      --bg: #07090d;
-      --bg2: #0b0e14;
-      --panel: #10141c;
-      --panel2: #141923;
-      --border: rgba(255,255,255,.09);
-      --border2: rgba(255,255,255,.14);
-      --text: #f4f7fb;
-      --muted: #8e98a8;
-      --muted2: #697383;
-      --green: #43e6a5;
-      --green2: #1fbd82;
-      --red: #ff6575;
-      --yellow: #f3c969;
-      --blue: #6ca8ff;
-      --shadow: 0 25px 80px rgba(0,0,0,.35);
-      --radius: 18px;
-      --max: 1220px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(67,230,165,.08), transparent 35%),
-        var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .container {
-      width: min(var(--max), calc(100% - 40px));
-      margin: auto;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* NAV */
-
-    .nav {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      backdrop-filter: blur(18px);
-      background: rgba(7,9,13,.82);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .nav-inner {
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      white-space: nowrap;
-    }
-
-    .brand-mark {
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(67,230,165,.4);
-      background: rgba(67,230,165,.08);
-      color: var(--green);
-      border-radius: 9px;
-      font-size: 17px;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 26px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn {
-      border: 1px solid var(--border2);
-      background: var(--panel);
-      color: var(--text);
-      padding: 11px 17px;
-      border-radius: 10px;
-      font-weight: 700;
-      transition: .2s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(255,255,255,.25);
-    }
-
-    .btn-primary {
-      border-color: rgba(67,230,165,.4);
-      background: var(--green);
-      color: #04120d;
-    }
-
-    .btn-primary:hover {
-      background: #62edb8;
-    }
-
-    /* HERO */
-
-    .hero {
-      padding: 100px 0 70px;
-      text-align: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border: 1px solid rgba(67,230,165,.18);
-      border-radius: 999px;
-      background: rgba(67,230,165,.06);
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .12em;
-    }
-
-    .hero h1 {
-      max-width: 950px;
-      margin: 24px auto 20px;
-      font-size: clamp(42px, 7vw, 82px);
-      line-height: .98;
-      letter-spacing: -.055em;
-    }
-
-    .hero h1 span {
-      color: var(--green);
-    }
-
-    .hero p {
-      max-width: 720px;
-      margin: auto;
-      color: var(--muted);
-      font-size: 17px;
-    }
-
-    .hero-actions {
-      margin-top: 30px;
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    /* SECTIONS */
-
-    .section {
-      padding: 85px 0;
-    }
-
-    .section-heading {
-      max-width: 700px;
-      margin-bottom: 35px;
-    }
-
-    .section-label {
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .13em;
-      margin-bottom: 10px;
-    }
-
-    .section-heading h2 {
-      font-size: clamp(30px, 5vw, 50px);
-      letter-spacing: -.04em;
-      line-height: 1.05;
-      margin-bottom: 12px;
-    }
-
-    .section-heading p {
-      color: var(--muted);
-    }
-
-    /* ANALYZER */
-
-    .analyzer-shell {
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.025), transparent),
-        var(--panel);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .analyzer-top {
-      padding: 24px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 12px rgba(67,230,165,.7);
-    }
-
-    .analyzer-grid {
-      display: grid;
-      grid-template-columns: 1.5fr .8fr;
-    }
-
-    .upload-area {
-      padding: 28px;
-      border-right: 1px solid var(--border);
-    }
-
-    .drop-zone {
-      min-height: 300px;
-      border: 1px dashed rgba(255,255,255,.18);
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 30px;
-      background:
-        radial-gradient(circle at center, rgba(67,230,165,.05), transparent 55%),
-        rgba(255,255,255,.015);
-      transition: .2s;
-    }
-
-    .drop-zone.dragging {
-      border-color: var(--green);
-      background: rgba(67,230,165,.07);
-    }
-
-    .upload-icon {
-      width: 60px;
-      height: 60px;
-      margin: 0 auto 16px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: rgba(67,230,165,.08);
-      color: var(--green);
-      font-size: 28px;
-    }
-
-    .drop-zone h3 {
-      font-size: 20px;
-      margin-bottom: 7px;
-    }
-
-    .drop-zone p {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .upload-note {
-      color: var(--muted2);
-      font-size: 12px;
-      margin-top: 12px;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .preview-grid {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-    }
-
-    .preview-card {
-      position: relative;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #080a0e;
-    }
-
-    .preview-card img {
-      display: block;
-      width: 100%;
-      height: 110px;
-      object-fit: cover;
-    }
-
-    .preview-info {
-      padding: 8px;
-    }
-
-    .preview-info select {
-      width: 100%;
-      background: #0c1017;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 7px;
-      border-radius: 7px;
-      font-size: 11px;
-    }
-
-    .remove-preview {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 25px;
-      height: 25px;
-      border: 0;
-      border-radius: 50%;
-      background: rgba(0,0,0,.75);
-      color: white;
-      z-index: 2;
-    }
-
-    /* CONTROLS */
-
-    .controls {
-      padding: 28px;
-    }
-
-    .control-group {
-      margin-bottom: 22px;
-    }
-
-    .control-group label {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .control-group input,
-    .control-group select {
-      width: 100%;
-      background: #0b0f16;
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      outline: none;
-    }
-
-    .control-group input:focus,
-    .control-group select:focus {
-      border-color: rgba(67,230,165,.5);
-    }
-
-    .focus-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-
-    .focus-chip {
-      border: 1px solid var(--border);
-      background: #0b0f16;
-      color: var(--muted);
-      padding: 7px 9px;
-      border-radius: 8px;
-      font-size: 11px;
-    }
-
-    .focus-chip.active {
-      color: var(--green);
-      border-color: rgba(67,230,165,.4);
-      background: rgba(67,230,165,.07);
-    }
-
-    .analyze-btn {
-      width: 100%;
-      margin-top: 5px;
-      padding: 14px;
-      border: 0;
-      border-radius: 11px;
-      background: var(--green);
-      color: #04120d;
-      font-weight: 900;
-      font-size: 15px;
-    }
-
-    .analyze-btn:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    .privacy-note {
-      margin-top: 13px;
-      text-align: center;
-      color: var(--muted2);
-      font-size: 11px;
-    }
-
-    /* CHECKS */
-
-    .checks {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      padding: 20px 28px;
-      border-top: 1px solid var(--border);
-    }
-
-    .check {
-      padding: 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(255,255,255,.015);
-    }
-
-    .check strong {
-      display: block;
-      font-size: 12px;
-      margin-bottom: 3px;
-    }
-
-    .check span {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    /* RESULT */
-
-    .result {
-      margin-top: 30px;
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      background: var(--panel);
-      overflow: hidden;
-    }
-
-    .result-header {
-      padding: 25px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .result-title h2 {
-      font-size: 26px;
-      letter-spacing: -.03em;
-    }
-
-    .result-meta {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .meta-pill {
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 10px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .confidence {
-      min-width: 120px;
-      text-align: center;
-      padding: 13px;
-      border: 1px solid rgba(67,230,165,.2);
-      border-radius: 13px;
-      background: rgba(67,230,165,.05);
-    }
-
-    .confidence strong {
-      display: block;
-      color: var(--green);
-      font-size: 27px;
-    }
-
-    .confidence span {
-      color: var(--muted);
-      font-size: 10px;
-      text-transform: uppercase;
-    }
-
-    .step-list {
-      padding: 8px 25px 25px;
-    }
-
-    .analysis-step {
-      display: grid;
-      grid-template-columns: 62px 1fr;
-      gap: 20px;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .analysis-step:last-child {
-      border-bottom: 0;
-    }
-
-    .step-number {
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 900;
-      padding-top: 4px;
-    }
-
-    .analysis-step h3 {
-      font-size: 18px;
-      margin-bottom: 8px;
-    }
-
-    .analysis-step p {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .observation-grid {
-      margin-top: 15px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 9px;
-    }
-
-    .observation {
-      padding: 13px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: rgba(255,255,255,.015);
-    }
-
-    .observation strong {
-      display: block;
-      font-size: 11px;
-      margin-bottom: 3px;
-    }
-
-    .observation span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .result-actions {
-      padding: 22px 25px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    /* FEATURES */
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 13px;
-    }
-
-    .feature {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      padding: 25px;
-      border-radius: var(--radius);
-    }
-
-    .feature-icon {
-      color: var(--green);
-      font-size: 22px;
-      margin-bottom: 14px;
-    }
-
-    .feature h3 {
-      font-size: 17px;
-      margin-bottom: 7px;
-    }
-
-    .feature p {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    /* HOW IT WORKS */
-
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .how-step {
-      padding: 25px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--panel);
-    }
-
-    .how-step .num {
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .how-step h3 {
-      margin: 12px 0 7px;
-    }
-
-    .how-step p {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    /* COMPARISON */
-
-    .comparison {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .compare-col {
-      padding: 28px;
-      background: var(--panel);
-    }
-
-    .compare-col:first-child {
-      border-right: 1px solid var(--border);
-    }
-
-    .compare-col h3 {
-      margin-bottom: 18px;
-    }
-
-    .compare-col.good h3 {
-      color: var(--green);
-    }
-
-    .compare-col ul {
-      list-style: none;
-    }
-
-    .compare-col li {
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    /* PRICING */
-
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .price-card {
-      padding: 30px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--panel);
-    }
-
-    .price-card.premium {
-      border-color: rgba(67,230,165,.35);
-      box-shadow: 0 0 50px rgba(67,230,165,.06);
-    }
-
-    .price-card h3 {
-      font-size: 22px;
-    }
-
-    .price {
-      margin: 15px 0 20px;
-      font-size: 44px;
-      font-weight: 900;
-      letter-spacing: -.05em;
-    }
-
-    .price small {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .price-card ul {
-      list-style: none;
-      margin-bottom: 25px;
-    }
-
-    .price-card li {
-      padding: 8px 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .price-card li::before {
-      content: "✓";
-      color: var(--green);
-      margin-right: 9px;
-    }
-
-    .trial {
-      display: inline-block;
-      margin-bottom: 15px;
-      padding: 6px 9px;
-      border-radius: 7px;
-      background: rgba(67,230,165,.08);
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    /* EXTENSION */
-
-    .extension {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 20px;
-      align-items: stretch;
-    }
-
-    .extension-card {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 20px;
-      padding: 30px;
-    }
-
-    .browser-mock {
-      min-height: 270px;
-      border: 1px solid var(--border2);
-      border-radius: 15px;
-      background: #090c12;
-      overflow: hidden;
-    }
-
-    .browser-bar {
-      height: 35px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0 12px;
-    }
-
-    .browser-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #444;
-    }
-
-    .chart-mock {
-      height: 235px;
-      display: grid;
-      place-items: center;
-      color: var(--muted2);
-      position: relative;
-    }
-
-    .analyze-extension {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      background: var(--green);
-      color: #03120d;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: 900;
-      font-size: 11px;
-    }
-
-    /* TRUST */
-
-    .trust-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-
-    .trust {
-      padding: 22px;
-      border: 1px solid var(--border);
-      border-radius: 15px;
-      background: var(--panel);
-    }
-
-    .trust strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .trust span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* FOOTER */
-
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 45px 0;
-      color: var(--muted2);
-      font-size: 12px;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
-      gap: 30px;
-    }
-
-    .footer-col strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-
-    .footer-col a {
-      display: block;
-      margin-bottom: 7px;
-    }
-
-    .footer-col a:hover {
-      color: var(--text);
-    }
-
-    .copyright {
-      margin-top: 35px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    /* MOBILE */
-
-    @media (max-width: 900px) {
-      .nav-links {
-        display: none;
-      }
-
-      .analyzer-grid,
-      .extension {
-        grid-template-columns: 1fr;
-      }
-
-      .upload-area {
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .preview-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .checks,
-      .trust-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .feature-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .steps-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        width: min(var(--max), calc(100% - 24px));
-      }
-
-      .hero {
-        padding: 65px 0 50px;
-      }
-
-      .section {
-        padding: 55px 0;
-      }
-
-      .nav-inner {
-        height: 64px;
-      }
-
-      .nav-actions .btn:first-child {
-        display: none;
-      }
-
-      .analyzer-top,
-      .result-header {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .feature-grid,
-      .steps-grid,
-      .pricing-grid,
-      .comparison {
-        grid-template-columns: 1fr;
-      }
-
-      .compare-col:first-child {
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .checks,
-      .trust-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .footer-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .observation-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .analysis-step {
-        grid-template-columns: 45px 1fr;
-      }
-
-      .upload-area,
-      .controls {
-        padding: 18px;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ChartLens — AI Chart Intelligence</title>
+
+<meta name="description"
+content="ChartLens turns chart images into structured, educational market analysis.">
+
+<style>
+:root{
+  --bg:#06080c;
+  --bg2:#0a0d13;
+  --panel:#0e131b;
+  --panel2:#121923;
+  --border:rgba(255,255,255,.085);
+  --border2:rgba(255,255,255,.14);
+  --text:#f5f7fa;
+  --muted:#8d98a8;
+  --muted2:#667181;
+  --green:#45e6a6;
+  --green2:#25bf87;
+  --red:#ff6677;
+  --yellow:#f2ca6b;
+  --blue:#70a8ff;
+  --shadow:0 25px 80px rgba(0,0,0,.38);
+  --radius:18px;
+  --max:1240px;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(69,230,166,.10),transparent 34%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,
+  BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.55;
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+.container{
+  width:min(var(--max),calc(100% - 40px));
+  margin:auto;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+/* ================= NAV ================= */
+
+.nav{
+  position:sticky;
+  top:0;
+  z-index:100;
+  height:72px;
+  background:rgba(6,8,12,.84);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+}
+
+.nav-inner{
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:25px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:950;
+  letter-spacing:.1em;
+}
+
+.logo-mark{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  color:var(--green);
+  background:rgba(69,230,166,.08);
+  border:1px solid rgba(69,230,166,.35);
+}
+
+.nav-links{
+  display:flex;
+  gap:27px;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.nav-links a:hover{
+  color:var(--text);
+}
+
+.nav-actions{
+  display:flex;
+  gap:9px;
+}
+
+.btn{
+  border:1px solid var(--border2);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:10px;
+  padding:10px 16px;
+  font-weight:750;
+  transition:.2s;
+}
+
+.btn:hover{
+  transform:translateY(-1px);
+  border-color:rgba(255,255,255,.25);
+}
+
+.btn-primary{
+  background:var(--green);
+  color:#04120d;
+  border-color:transparent;
+}
+
+.btn-primary:hover{
+  background:#63edb8;
+}
+
+.btn-danger{
+  color:#fff;
+  border-color:rgba(255,102,119,.25);
+  background:rgba(255,102,119,.08);
+}
+
+/* ================= HERO ================= */
+
+.hero{
+  padding:105px 0 85px;
+  text-align:center;
+}
+
+.eyebrow{
+  display:inline-flex;
+  padding:7px 12px;
+  border-radius:999px;
+  color:var(--green);
+  background:rgba(69,230,166,.06);
+  border:1px solid rgba(69,230,166,.2);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+
+.hero h1{
+  max-width:1000px;
+  margin:25px auto 20px;
+  font-size:clamp(45px,7vw,86px);
+  line-height:.96;
+  letter-spacing:-.065em;
+}
+
+.hero h1 span{
+  color:var(--green);
+}
+
+.hero p{
+  max-width:720px;
+  margin:auto;
+  color:var(--muted);
+  font-size:17px;
+}
+
+.hero-buttons{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:30px;
+}
+
+/* ================= GENERAL ================= */
+
+.section{
+  padding:85px 0;
+}
+
+.section-label{
+  color:var(--green);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.13em;
+  margin-bottom:10px;
+}
+
+.section-heading{
+  max-width:720px;
+  margin-bottom:35px;
+}
+
+.section-heading h2{
+  font-size:clamp(30px,5vw,52px);
+  letter-spacing:-.045em;
+  line-height:1.05;
+  margin-bottom:12px;
+}
+
+.section-heading p{
+  color:var(--muted);
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+
+/* ================= ANALYZER ================= */
+
+.analyzer-shell{
+  overflow:hidden;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:24px;
+  box-shadow:var(--shadow);
+}
+
+.analyzer-header{
+  padding:23px 27px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap:15px;
+  align-items:center;
+}
+
+.status{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--green);
+  font-size:12px;
+  font-weight:850;
+}
+
+.status-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 14px rgba(69,230,166,.7);
+}
+
+.analyzer-grid{
+  display:grid;
+  grid-template-columns:1.45fr .8fr;
+}
+
+.upload-panel{
+  padding:27px;
+  border-right:1px solid var(--border);
+}
+
+.drop-zone{
+  min-height:310px;
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding:30px;
+  background:
+    radial-gradient(circle,rgba(69,230,166,.055),transparent 58%),
+    rgba(255,255,255,.012);
+  transition:.2s;
+}
+
+.drop-zone.dragging{
+  border-color:var(--green);
+  background:rgba(69,230,166,.07);
+}
+
+.upload-symbol{
+  width:62px;
+  height:62px;
+  margin:0 auto 16px;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  color:var(--green);
+  background:rgba(69,230,166,.08);
+  font-size:28px;
+}
+
+.drop-zone h3{
+  font-size:21px;
+  margin-bottom:6px;
+}
+
+.drop-zone p{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.upload-note{
+  color:var(--muted2);
+  font-size:11px;
+  margin-top:12px;
+}
+
+.file-input{
+  display:none;
+}
+
+/* PREVIEWS */
+
+.preview-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:9px;
+  margin-top:18px;
+}
+
+.preview-card{
+  position:relative;
+  overflow:hidden;
+  background:#080a0e;
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+.preview-card img{
+  width:100%;
+  height:100px;
+  display:block;
+  object-fit:cover;
+}
+
+.preview-body{
+  padding:8px;
+}
+
+.preview-body select{
+  width:100%;
+  padding:7px;
+  border-radius:7px;
+  border:1px solid var(--border);
+  background:#0b0f16;
+  color:var(--text);
+  font-size:11px;
+}
+
+.remove{
+  position:absolute;
+  top:5px;
+  right:5px;
+  z-index:2;
+  width:25px;
+  height:25px;
+  border:0;
+  border-radius:50%;
+  background:rgba(0,0,0,.78);
+  color:white;
+}
+
+/* CONTROLS */
+
+.controls{
+  padding:27px;
+}
+
+.field{
+  margin-bottom:21px;
+}
+
+.field label{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.07em;
+  margin-bottom:8px;
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  border:1px solid var(--border);
+  background:#0a0e15;
+  color:var(--text);
+  border-radius:10px;
+  padding:12px;
+  outline:none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+  border-color:rgba(69,230,166,.5);
+}
+
+.focus-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+
+.focus-chip{
+  padding:7px 9px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:#0a0e15;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.focus-chip.active{
+  color:var(--green);
+  border-color:rgba(69,230,166,.4);
+  background:rgba(69,230,166,.07);
+}
+
+.analyze-button{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:11px;
+  background:var(--green);
+  color:#03120d;
+  font-weight:950;
+}
+
+.analyze-button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.analyzer-note{
+  color:var(--muted2);
+  text-align:center;
+  font-size:10px;
+  margin-top:12px;
+}
+
+/* CHECKS */
+
+.checks{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  padding:20px 27px;
+  border-top:1px solid var(--border);
+}
+
+.check{
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:rgba(255,255,255,.012);
+}
+
+.check strong{
+  display:block;
+  font-size:11px;
+  margin-bottom:3px;
+}
+
+.check span{
+  color:var(--muted);
+  font-size:10px;
+}
+
+/* ================= LOADING ================= */
+
+.loading{
+  margin-top:25px;
+  padding:30px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:var(--panel);
+  text-align:center;
+}
+
+.loader{
+  width:35px;
+  height:35px;
+  margin:0 auto 12px;
+  border:3px solid rgba(255,255,255,.08);
+  border-top-color:var(--green);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+/* ================= ERROR ================= */
+
+.error-box{
+  margin-top:20px;
+  padding:18px;
+  border:1px solid rgba(255,102,119,.25);
+  border-radius:13px;
+  color:#ff9aa5;
+  background:rgba(255,102,119,.06);
+}
+
+/* ================= RESULT ================= */
+
+.result{
+  margin-top:30px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:22px;
+  background:var(--panel);
+}
+
+.result-header{
+  padding:25px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap;
+}
+
+.result-title h2{
+  font-size:27px;
+  letter-spacing:-.03em;
+}
+
+.meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:9px;
+}
+
+.pill{
+  padding:6px 10px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  color:var(--muted);
+  font-size:10px;
+}
+
+.confidence{
+  min-width:130px;
+  text-align:center;
+  padding:13px;
+  border:1px solid rgba(69,230,166,.2);
+  border-radius:13px;
+  background:rgba(69,230,166,.05);
+}
+
+.confidence strong{
+  display:block;
+  color:var(--green);
+  font-size:27px;
+}
+
+.confidence span{
+  color:var(--muted);
+  font-size:9px;
+  text-transform:uppercase;
+}
+
+.result-body{
+  padding:25px;
+}
+
+.final-read{
+  padding:20px;
+  margin-bottom:20px;
+  border:1px solid rgba(69,230,166,.18);
+  border-radius:15px;
+  background:rgba(69,230,166,.035);
+}
+
+.final-read h3{
+  margin-bottom:7px;
+}
+
+.final-read p{
+  color:var(--muted);
+}
+
+.analysis-step{
+  padding:27px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.analysis-step:last-child{
+  border-bottom:0;
+}
+
+.step-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.step-number{
+  color:var(--green);
+  font-size:11px;
+  font-weight:950;
+}
+
+.step-title h3{
+  font-size:18px;
+}
+
+.observation-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:9px;
+}
+
+.observation{
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:rgba(255,255,255,.012);
+}
+
+.observation strong{
+  display:block;
+  font-size:10px;
+  margin-bottom:4px;
+}
+
+.observation span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.result-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:20px 25px;
+  border-top:1px solid var(--border);
+}
+
+/* ================= EDUCATION ================= */
+
+.education{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.education-card{
+  padding:25px;
+}
+
+.education-card h3{
+  margin-bottom:8px;
+}
+
+.education-card p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* ================= FEATURES ================= */
+
+.feature-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:13px;
+}
+
+.feature{
+  padding:25px;
+}
+
+.feature-icon{
+  color:var(--green);
+  font-size:23px;
+  margin-bottom:13px;
+}
+
+.feature h3{
+  font-size:17px;
+  margin-bottom:7px;
+}
+
+.feature p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* ================= JOURNAL ================= */
+
+.journal-layout{
+  display:grid;
+  grid-template-columns:.8fr 1.2fr;
+  gap:15px;
+}
+
+.journal-form{
+  padding:25px;
+}
+
+.journal-list{
+  padding:25px;
+}
+
+.journal-entry{
+  padding:17px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  margin-bottom:10px;
+  background:rgba(255,255,255,.012);
+}
+
+.journal-entry h4{
+  margin-bottom:3px;
+}
+
+.journal-entry small{
+  color:var(--muted2);
+}
+
+.journal-entry p{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:8px;
+}
+
+.empty{
+  color:var(--muted2);
+  text-align:center;
+  padding:30px 10px;
+}
+
+/* ================= ACADEMY ================= */
+
+.lesson-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:13px;
+}
+
+.lesson{
+  padding:24px;
+}
+
+.lesson-tag{
+  display:inline-block;
+  color:var(--green);
+  background:rgba(69,230,166,.07);
+  border-radius:7px;
+  padding:5px 8px;
+  font-size:9px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+
+.lesson h3{
+  margin-bottom:7px;
+}
+
+.lesson p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* ================= HOW ================= */
+
+.how-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.how{
+  padding:24px;
+}
+
+.how-number{
+  color:var(--green);
+  font-size:11px;
+  font-weight:900;
+}
+
+.how h3{
+  margin:12px 0 7px;
+}
+
+.how p{
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* ================= COMPARISON ================= */
+
+.comparison{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  overflow:hidden;
+}
+
+.compare{
+  padding:28px;
+}
+
+.compare:first-child{
+  border-right:1px solid var(--border);
+}
+
+.compare.good h3{
+  color:var(--green);
+}
+
+.compare ul{
+  list-style:none;
+  margin-top:15px;
+}
+
+.compare li{
+  color:var(--muted);
+  font-size:13px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.compare li::before{
+  content:"✓";
+  color:var(--green);
+  margin-right:9px;
+}
+
+/* ================= PRICING ================= */
+
+.pricing-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.price-card{
+  padding:30px;
+}
+
+.price-card.premium{
+  border-color:rgba(69,230,166,.35);
+  box-shadow:0 0 55px rgba(69,230,166,.055);
+}
+
+.price{
+  font-size:48px;
+  font-weight:950;
+  letter-spacing:-.06em;
+  margin:15px 0;
+}
+
+.price small{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:500;
+}
+
+.price-card ul{
+  list-style:none;
+  margin:20px 0;
+}
+
+.price-card li{
+  color:var(--muted);
+  font-size:13px;
+  padding:8px 0;
+}
+
+.price-card li::before{
+  content:"✓";
+  color:var(--green);
+  margin-right:9px;
+}
+
+/* ================= EXTENSION ================= */
+
+.extension{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+
+.extension-card{
+  padding:30px;
+}
+
+.browser{
+  height:300px;
+  overflow:hidden;
+  border:1px solid var(--border2);
+  border-radius:16px;
+  background:#090c12;
+}
+
+.browser-top{
+  height:35px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:0 12px;
+}
+
+.browser-dot{
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:#454b55;
+}
+
+.browser-content{
+  height:265px;
+  display:grid;
+  place-items:center;
+  position:relative;
+  color:var(--muted2);
+}
+
+.extension-button{
+  position:absolute;
+  top:18px;
+  right:18px;
+  background:var(--green);
+  color:#03120d;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:10px;
+  font-weight:950;
+}
+
+/* ================= TRUST ================= */
+
+.trust-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.trust{
+  padding:22px;
+}
+
+.trust strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+.trust span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* ================= FOOTER ================= */
+
+footer{
+  margin-top:50px;
+  padding:45px 0;
+  border-top:1px solid var(--border);
+  color:var(--muted2);
+  font-size:12px;
+}
+
+.footer-grid{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:30px;
+}
+
+.footer-col strong{
+  display:block;
+  color:var(--text);
+  margin-bottom:12px;
+}
+
+.footer-col a{
+  display:block;
+  margin-bottom:7px;
+}
+
+.copyright{
+  margin-top:35px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+}
+
+/* ================= TOAST ================= */
+
+.toast{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  z-index:200;
+  max-width:350px;
+  padding:14px 17px;
+  border-radius:11px;
+  background:#151b25;
+  border:1px solid var(--border2);
+  box-shadow:var(--shadow);
+  transform:translateY(20px);
+  opacity:0;
+  pointer-events:none;
+  transition:.25s;
+  font-size:12px;
+}
+
+.toast.show{
+  transform:translateY(0);
+  opacity:1;
+}
+
+/* ================= MOBILE ================= */
+
+@media(max-width:900px){
+
+  .nav-links{
+    display:none;
+  }
+
+  .analyzer-grid,
+  .journal-layout,
+  .education,
+  .extension{
+    grid-template-columns:1fr;
+  }
+
+  .upload-panel{
+    border-right:0;
+    border-bottom:1px solid var(--border);
+  }
+
+  .preview-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+
+  .checks,
+  .trust-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .feature-grid,
+  .lesson-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .how-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .footer-grid{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+
+  .container{
+    width:calc(100% - 24px);
+  }
+
+  .hero{
+    padding:70px 0 55px;
+  }
+
+  .section{
+    padding:55px 0;
+  }
+
+  .nav{
+    height:64px;
+  }
+
+  .nav-actions .btn:first-child{
+    display:none;
+  }
+
+  .analyzer-header,
+  .result-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .preview-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .checks,
+  .trust-grid,
+  .feature-grid,
+  .lesson-grid,
+  .how-grid,
+  .pricing-grid,
+  .comparison{
+    grid-template-columns:1fr;
+  }
+
+  .compare:first-child{
+    border-right:0;
+    border-bottom:1px solid var(--border);
+  }
+
+  .observation-grid{
+    grid-template-columns:1fr;
+  }
+
+  .upload-panel,
+  .controls{
+    padding:18px;
+  }
+
+  .footer-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<!-- ================= NAVIGATION ================= -->
+<!-- =========================================================
+     NAVIGATION
+========================================================= -->
 
 <nav class="nav">
-  <div class="container nav-inner">
+<div class="container nav-inner">
 
-    <a href="#" class="brand">
-      <span class="brand-mark">✦</span>
-      <span>CHARTLENS</span>
-    </a>
+<a href="#" class="logo">
+<span class="logo-mark">✦</span>
+<span>CHARTLENS</span>
+</a>
 
-    <div class="nav-links">
-      <a href="#analyzer">Analyzer</a>
-      <a href="#academy">Academy</a>
-      <a href="#journal">Journal</a>
-      <a href="#pricing">Pricing</a>
-    </div>
+<div class="nav-links">
+<a href="#analyzer">Analyzer</a>
+<a href="#academy">Academy</a>
+<a href="#journal">Journal</a>
+<a href="#pricing">Pricing</a>
+</div>
 
-    <div class="nav-actions">
-      <button class="btn">Sign In</button>
-      <button class="btn btn-primary" onclick="scrollToAnalyzer()">
-        Analyze Chart
-      </button>
-    </div>
+<div class="nav-actions">
+<button class="btn" onclick="showToast('Account system coming next.')">
+Sign In
+</button>
 
-  </div>
+<button class="btn btn-primary" onclick="scrollToAnalyzer()">
+Analyze Chart
+</button>
+</div>
+
+</div>
 </nav>
 
 
-<!-- ================= HERO ================= -->
+<!-- =========================================================
+     HERO
+========================================================= -->
 
 <header class="hero">
-  <div class="container">
+<div class="container">
 
-    <div class="eyebrow">
-      ✦ AI CHART INTELLIGENCE
-    </div>
-
-    <h1>
-      SEE THE MARKET.<br>
-      <span>UNDERSTAND THE CHART.</span>
-    </h1>
-
-    <p>
-      Upload your chart and receive a structured educational analysis
-      covering market structure, price location, patterns,     button,
-    input {
-      font: inherit;
-    }
-
-    .container {
-      width: min(1180px, calc(100% - 32px));
-      margin: auto;
-    }
-
-    /* NAV */
-
-    nav {
-      height: 78px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: -.03em;
-      font-size: 20px;
-    }
-
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, var(--cyan), var(--purple));
-      color: #061016;
-      font-weight: 900;
-      box-shadow: 0 0 30px rgba(85,238,224,.18);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 28px;
-      align-items: center;
-    }
-
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .nav-links a:hover {
-      color: white;
-    }
-
-    .nav-button {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      color: white;
-      padding: 10px 17px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    /* HERO */
-
-    .hero {
-      text-align: center;
-      padding: 95px 0 55px;
-      max-width: 900px;
-      margin: auto;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      padding: 8px 13px;
-      border: 1px solid rgba(85,238,224,.22);
-      background: rgba(85,238,224,.06);
-      color: var(--cyan);
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .14em;
-      margin-bottom: 24px;
-    }
-
-    h1 {
-      font-size: clamp(44px, 7vw, 82px);
-      line-height: .98;
-      letter-spacing: -.065em;
-      margin-bottom: 24px;
-    }
-
-    h1 span {
-      background: linear-gradient(90deg, var(--cyan), #a78bff);
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    .hero p {
-      max-width: 690px;
-      margin: auto;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
-    }
-
-    /* ANALYZER */
-
-    .analyzer {
-      max-width: 850px;
-      margin: 30px auto 100px;
-      padding: 10px;
-      border-radius: 24px;
-      background: linear-gradient(
-        135deg,
-        rgba(85,238,224,.18),
-        rgba(146,116,255,.15)
-      );
-    }
-
-    .analyzer-inner {
-      background: rgba(7,11,17,.96);
-      border: 1px solid var(--border);
-      border-radius: 17px;
-      padding: 30px;
-    }
-
-    .analyzer-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-    }
-
-    .analyzer-header h2 {
-      font-size: 21px;
-    }
-
-    .status {
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .dropzone {
-      min-height: 300px;
-      border: 1px dashed rgba(85,238,224,.4);
-      border-radius: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      cursor: pointer;
-      background:
-        radial-gradient(circle, rgba(85,238,224,.06), transparent 60%);
-      transition: .2s;
-      overflow: hidden;
-    }
-
-    .dropzone:hover {
-      border-color: var(--cyan);
-      background-color: rgba(85,238,224,.04);
-    }
-
-    .upload-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 17px;
-      display: grid;
-      place-items: center;
-      font-size: 30px;
-      color: var(--cyan);
-      background: rgba(85,238,224,.08);
-      margin-bottom: 18px;
-    }
-
-    .dropzone h3 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .dropzone p {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    #chartInput {
-      display: none;
-    }
-
-    .preview {
-      display: none;
-      width: 100%;
-    }
-
-    .preview img {
-      width: 100%;
-      max-height: 450px;
-      object-fit: contain;
-      border-radius: 12px;
-      background: #05070b;
-    }
-
-    .analyze-button {
-      width: 100%;
-      border: 0;
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: 13px;
-      background: linear-gradient(90deg, var(--cyan), var(--purple));
-      color: #05070c;
-      font-weight: 900;
-      cursor: pointer;
-      font-size: 15px;
-    }
-
-    .analyze-button:disabled {
-      opacity: .45;
-      cursor: not-allowed;
-    }
-
-    .privacy {
-      text-align: center;
-      color: #687384;
-      font-size: 11px;
-      margin-top: 13px;
-    }
-
-    /* FEATURES */
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 35px;
-    }
-
-    .section-title span {
-      color: var(--cyan);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .15em;
-    }
-
-    .section-title h2 {
-      font-size: clamp(30px, 5vw, 48px);
-      letter-spacing: -.04em;
-      margin-top: 10px;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 100px;
-    }
-
-    .feature {
-      padding: 25px;
-      border: 1px solid var(--border);
-      border-radius: 17px;
-      background: linear-gradient(
-        145deg,
-        rgba(255,255,255,.035),
-        rgba(255,255,255,.012)
-      );
-    }
-
-    .feature-icon {
-      font-size: 24px;
-      margin-bottom: 18px;
-    }
-
-    .feature h3 {
-      margin-bottom: 9px;
-    }
-
-    .feature p {
-      color: var(--muted);
-      line-height: 1.6;
-      font-size: 14px;
-    }
-
-    /* ANALYSIS */
-
-    #analysis {
-      display: none;
-      margin-bottom: 100px;
-    }
-
-    .analysis-card {
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 22px;
-      overflow: hidden;
-    }
-
-    .analysis-top {
-      padding: 25px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .analysis-top h2 {
-      margin-top: 7px;
-    }
-
-    .confidence {
-      text-align: right;
-    }
-
-    .confidence strong {
-      font-size: 34px;
-      color: var(--cyan);
-    }
-
-    .confidence small {
-      display: block;
-      color: var(--muted);
-    }
-
-    .analysis-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .analysis-item {
-      padding: 23px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .analysis-item:nth-child(odd) {
-      border-right: 1px solid var(--border);
-    }
-
-    .analysis-item span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      margin-bottom: 9px;
-    }
-
-    .analysis-item strong {
-      font-size: 16px;
-    }
-
-    footer {
-      padding: 35px 0;
-      border-top: 1px solid var(--border);
-      text-align: center;
-      color: #667181;
-      font-size: 12px;
-    }
-
-    @media(max-width: 700px) {
-      .nav-links {
-        display: none;
-      }
-
-      .hero {
-        padding-top: 65px;
-      }
-
-      .analyzer-inner {
-        padding: 18px;
-      }
-
-      .feature-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .analysis-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .analysis-item:nth-child(odd) {
-        border-right: 0;
-      }
-
-      .analysis-top {
-        flex-direction: column;
-      }
-
-      .confidence {
-        text-align: left;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="container">
-
-    <nav>
-      <div class="brand">
-        <div class="brand-logo">✦</div>
-        CHARTLENS
-      </div>
-
-      <div class="nav-links">
-        <a href="#analyzer">Analyzer</a>
-        <a href="#features">Framework</a>
-        <a href="#pricing">Pricing</a>
-        <button class="nav-button">Sign in</button>
-      </div>
-    </nav>
-
-    <section class="hero">
-      <div class="eyebrow">AI-POWERED CHART INTELLIGENCE</div>
-
-      <h1>
-        SEE THE MARKET.<br>
-        <span>UNDERSTAND THE CHART.</span>
-      </h1>
-
-      <p>
-        Upload a chart and get a structured educational analysis of
-        market structure, important levels, patterns, momentum and
-        potential scenarios — explained clearly instead of hidden
-        behind vague AI predictions.
-      </p>
-    </section>
-
-    <section id="analyzer" class="analyzer">
-
-      <div class="analyzer-inner">
-
-        <div class="analyzer-header">
-          <div>
-            <h2>Chart Analyzer</h2>
-          </div>
-
-          <div class="status">● READY</div>
-        </div>
-
-        <label class="dropzone" for="chartInput">
-
-          <input
-            id="chartInput"
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-          >
-
-          <div id="uploadContent">
-            <div class="upload-icon">＋</div>
-
-            <h3>Drop your chart here</h3>
-
-            <p>
-              PNG · JPG · WEBP · Tap to upload
-            </p>
-          </div>
-
-          <div id="preview" class="preview">
-            <img id="previewImage" alt="Uploaded chart preview">
-          </div>
-
-        </label>
-
-        <button
-          id="analyzeButton"
-          class="analyze-button"
-          disabled
-        >
-          Analyze Chart →
-        </button>
-
-        <div class="privacy">
-          Educational analysis only · No guaranteed predictions
-        </div>
-
-      </div>
-
-    </section>
-
-    <section id="features">
-
-      <div class="section-title">
-        <span>THE CHARTLENS FRAMEWORK</span>
-        <h2>A better way to read a chart.</h2>
-      </div>
-
-      <div class="feature-grid">
-
-        <article class="feature">
-          <div class="feature-icon">◈</div>
-          <h3>Market Structure</h3>
-          <p>
-            Identify visible structure, important swing points,
-            trend context and changes in market behavior.
-          </p>
-        </article>
-
-        <article class="feature">
-          <div class="feature-icon">◎</div>
-          <h3>Key Levels</h3>
-          <p>
-            Highlight areas that deserve attention instead of
-            overwhelming you with dozens of meaningless lines.
-          </p>
-        </article>
-
-        <article class="feature">
-          <div class="feature-icon">⌁</div>
-          <h3>Pattern Recognition</h3>
-          <p>
-            Examine recognizable chart structures and explain
-            what evidence supports or contradicts them.
-          </p>
-        </article>
-
-        <article class="feature">
-          <div class="feature-icon">↗</div>
-          <h3>Momentum</h3>
-          <p>
-            Evaluate visible momentum and price behavior while
-            clearly separating observation from prediction.
-          </p>
-        </article>
-
-        <article class="feature">
-          <div class="feature-icon">◉</div>
-          <h3>Confidence</h3>
-          <p>
-            Receive a transparent confidence assessment rather
-            than a fake guarantee of what happens next.
-          </p>
-        </article>
-
-        <article class="feature">
-          <div class="feature-icon">✦</div>
-          <h3>Explain the Read</h3>
-          <p>
-            Every important observation is explained so you can
-            learn how to interpret charts yourself.
-          </p>
-        </article>
-
-      </div>
-
-    </section>
-
-    <section id="analysis">
-
-      <div class="section-title">
-        <span>AI ANALYSIS</span>
-        <h2>Chart intelligence report</h2>
-      </div>
-
-      <div class="analysis-card">
-
-        <div class="analysis-top">
-          <div>
-            <small>OVERALL READ</small>
-            <h2 id="analysisHeadline">
-              Analysis ready
-            </h2>
-          </div>
-
-          <div class="confidence">
-            <strong id="confidenceValue">—</strong>
-            <small>confidence</small>
-          </div>
-        </div>
-
-        <div class="analysis-grid">
-
-          <div class="analysis-item">
-            <span>Market structure</span>
-            <strong id="structure">
-              Awaiting analysis
-            </strong>
-          </div>
-
-          <div class="analysis-item">
-            <span>Key levels</span>
-            <strong id="levels">
-              Awaiting analysis
-            </strong>
-          </div>
-
-          <div class="analysis-item">
-            <span>Pattern</span>
-            <strong id="pattern">
-              Awaiting analysis
-            </strong>
-          </div>
-
-          <div class="analysis-item">
-            <span>Momentum</span>
-            <strong id="momentum">
-              Awaiting analysis
-            </strong>
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-    <footer>
-      ChartLens © 2026 · Educational chart analysis only.
-    </footer>
-
-  </div>
-
-<script>
-
-  const chartInput =
-    document.getElementById("chartInput");
-
-  const uploadContent =
-    document.getElementById("uploadContent");
-
-  const preview =
-    document.getElementById("preview");
-
-  const previewImage =
-    document.getElementById("previewImage");
-
-  const analyzeButton =
-    document.getElementById("analyzeButton");
-
-  const analysis =
-    document.getElementById("analysis");
-
-
-  /* IMAGE PREVIEW */
-
-  chartInput.addEventListener("change", function () {
-
-    const file = this.files[0];
-
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please choose a PNG, JPG or WEBP image.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-
-      previewImage.src = event.target.result;
-
-      uploadContent.style.display = "none";
-      preview.style.display = "block";
-
-      analyzeButton.disabled = false;
-
-    };
-
-    reader.readAsDataURL(file);
-
-  });
-
-
-  /* DEMO ANALYSIS */
-
-  analyzeButton.addEventListener("click", function () {
-
-    analysis.style.display = "block";
-
-    document.getElementById("analysisHeadline")
-      .textContent = "Chart uploaded successfully";
-
-    document.getElementById("confidenceValue")
-      .textContent = "—";
-
-    document.getElementById("structure")
-      .textContent = "Ready for AI analysis";
-
-    document.getElementById("levels")
-      .textContent = "Ready for AI analysis";
-
-    document.getElementById("pattern")
-      .textContent = "Ready for AI analysis";
-
-    document.getElementById("momentum")
-      .textContent = "Ready for AI analysis";
-
-    analysis.scrollIntoView({
-      behavior: "smooth"
-    });
-
-  });
-
-</script>
-
-</body>
-                                            </html>      <select id="pairAsset" name="pairAsset">
-        <option>XAU/USD</option>
-        <option>EUR/USD</option>
-        <option>GBP/USD</option>
-        <option>USD/JPY</option>
-        <option>BTC/USD</option>
-      </select>
-    </label>
-    <label>
-      <span>Timeframe</span>
-      <select id="timeframe" name="timeframe">
-        <option>1 Minute</option>
-        <option>5 Minutes</option>
-        <option>15 Minutes</option>
-        <option>1 Hour</option>
-        <option>4 Hours</option>
-        <option>1 Day</option>
-      </select>
-    </label>
-  </div>
-
-  <div class="analysis-focus">
-    <h3>Analysis Focus</h3>
-    <div class="focus-list">
-      <label class="focus-item"><input type="checkbox" name="focus" value="market_structure" checked><span>📊</span> Market Structure</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="key_levels" checked><span>🎯</span> Key Levels</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="chart_patterns" checked><span>◈</span> Chart Patterns</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="momentum" checked><span>⚡</span> Momentum</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="supply_demand" checked><span>🛡️</span> Supply / Demand</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="candlestick" checked><span>◐</span> Candlestick Behaviour</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="moving_averages" checked><span>〽</span> Moving Averages, if visible</label>
-      <label class="focus-item"><input type="checkbox" name="focus" value="liquidity" checked><span>◉</span> Liquidity / Sweeps</label>
-    </div>
-  </div>
-</section>
-
-<input id="image" class="file" type="file" accept="image/png,image/jpeg,image/webp"><img id="preview" class="preview" alt="Chart preview"></div>
-    <div class="section"><label class="title">Analysis focus</label><div class="focus" id="focuses">
-      <label class="check"><input type="checkbox" value="Market structure" checked>📊 Market structure</label>
-      <label class="check"><input type="checkbox" value="Support / resistance" checked>🎯 Support / resistance</label>
-      <label class="check"><input type="checkbox" value="Trend direction" checked>↗ Trend direction</label>
-      <label class="check"><input type="checkbox" value="Liquidity / sweeps" checked>◌ Liquidity / sweeps</label>
-      <label class="check"><input type="checkbox" value="Supply / demand zones" checked>🛡 Supply / demand zones</label>
-      <label class="check"><input type="checkbox" value="BOS / CHoCH" checked>⇄ BOS / CHoCH</label>
-      <label class="check"><input type="checkbox" value="Candlestick behaviour" checked>▥ Candlestick behaviour</label>
-      <label class="check"><input type="checkbox" value="Chart patterns" checked>◇ Chart patterns</label>
-      <label class="check"><input type="checkbox" value="Moving averages, if visible" checked>〰 Moving averages, if visible</label>
-      <label class="check"><input type="checkbox" value="Momentum / volatility, if visible" checked>⚡ Momentum / volatility, if visible</label>
-      <label class="check"><input type="checkbox" value="Volume, only if visible" checked>▥ Volume, only if visible</label>
-      <label class="check"><input type="checkbox" value="Key price levels" checked>🎯 Key price levels</label>
-    </div></div>
-    <button id="analyze">Analyze Chart</button><div id="status" class="status">Upload a chart image to begin.</div>
-  </div>
-
-  <div id="results" class="card" style="display:none"></div>
-  <div class="foot">Educational analysis only. ChartLens does not guarantee market outcomes, provide personalized financial advice, or replace independent research and risk management.</div>
+<div class="eyebrow">
+✦ AI CHART INTELLIGENCE
 </div>
 
-<script>
-const imageInput=document.getElementById('image');
-const preview=document.getElementById('preview');
-const status=document.getElementById('status');
-const results=document.getElementById('results');
-const button=document.getElementById('analyze');
+<h1>
+SEE THE MARKET.<br>
+<span>UNDERSTAND THE CHART.</span>
+</h1>
 
-imageInput.addEventListener('change',()=>{
-  const f=imageInput.files[0];
-  if(!f){preview.style.display='none';return}
-  preview.src=URL.createObjectURL(f); preview.style.display='block';
-  status.className='status'; status.textContent='Chart loaded. Ready to analyze.';
-});
+<p>
+ChartLens transforms chart screenshots into structured,
+educational analysis of market structure, price location,
+patterns, momentum, liquidity and important levels.
+</p>
 
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function section(title,value){return `<div class="section"><h3>${esc(title)}</h3><p>${esc(value||'Not available from the image.')}</p></div>`}
+<div class="hero-buttons">
+
+<button class="btn btn-primary"
+onclick="scrollToAnalyzer()">
+Analyze Your Chart
+</button>
+
+<button class="btn"
+onclick="document.getElementById('sample').scrollIntoView()">
+View Sample Analysis
+</button>
+
+</div>
+
+</div>
+</header>
 
 
-async function compressImage(file, maxSide=1600, quality=0.82){
-  const src=await new Promise((resolve,reject)=>{
-    const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);
-  });
-  const img=await new Promise((resolve,reject)=>{
-    const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=src;
-  });
-  const scale=Math.min(1, maxSide/Math.max(img.naturalWidth,img.naturalHeight));
-  const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
-  canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-  const ctx=canvas.getContext('2d',{alpha:false});
-  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(img,0,0,canvas.width,canvas.height);
-  return canvas.toDataURL('image/jpeg',quality);
-}
+<!-- =========================================================
+     ANALYZER
+========================================================= -->
 
-function render(r){
-  const conf=(r.confidence||'medium').toLowerCase();
-  const cls=conf==='high'?'high':conf==='low'?'low':'medium';
-  const label=conf==='high'?'🟢 High confidence':conf==='low'?'🔴 Low confidence':'🟡 Moderate confidence';
-  const score=r.confidence_score!=null?Number(r.confidence_score):null;
-  results.style.display='block';
-  const row=(icon,title,value,scoreValue)=>`<div class="analysisRow"><div class="analysisIcon">${icon}</div><div><div class="analysisLabel">${esc(title)}</div><div class="analysisText">${esc(value||'Not available from the image.')}</div></div><div class="analysisScore">${scoreValue!=null?`Confidence<span>${esc(scoreValue)}%</span>`:'Evidence<span>—</span>'}</div></div>`;
-  results.innerHTML=
-    `<div class="resultsHead"><div class="resultsTitle">AI Chart Analysis</div><div class="confidence ${cls}">${label}${score!=null?' — '+esc(score)+'%':''}</div></div>`+
-    `<div class="section"><h3>Overall assessment</h3><p>${esc(r.overall_assessment||'Not available from the image.')}</p></div>`+
-    `<div class="grid" style="margin-top:14px">`+
-      `<div class="metric"><b>Asset</b>${esc(r.asset)}</div><div class="metric"><b>Timeframe</b>${esc(r.timeframe)}</div><div class="metric"><b>Bias</b>${esc(r.bias)}</div><div class="metric"><b>Image quality</b>${esc(r.image_quality)}</div>`+
-    `</div>`+
-    `<div class="section"><h3>Detected features</h3>`+
-      row('📊','Market Structure',r.market_structure)+
-      row('🎯','Key Levels',r.key_levels)+
-      row('◇','Chart Patterns',r.chart_patterns,r.pattern_confidence)+
-      row('⚡','Momentum',r.momentum_volatility)+
-      row('🛡','Supply & Demand',r.supply_demand)+
-    `</div>`+
-    section('Trend',r.trend)+section('Support / resistance',r.support_resistance)+section('Liquidity / sweeps',r.liquidity)+section('BOS / CHoCH',r.bos_choch)+section('Candlestick behaviour',r.candlesticks)+section('Moving averages',r.moving_averages)+section('Volume',r.volume)+section('Scenario / confirmation',r.scenario)+section('Invalidation / caution',r.invalidation)+
-    `<div class="section"><h3>Overall AI confidence</h3><div class="overall"><div class="scoreRing">${score!=null?esc(score)+'%':'—'}<small>VISIBLE EVIDENCE</small></div><div><strong style="font-size:20px">${label}</strong><p style="margin-top:7px">Confidence reflects the model's confidence in identifying visible chart features. It is not a probability of trade success.</p></div></div></div>`+
-    `<div class="section"><h3>Educational note</h3><p>Analysis is limited to information readable in the uploaded chart. Missing, cropped or ambiguous information is reported as unavailable rather than guessed.</p></div>`;
-}
+<section class="section" id="analyzer">
+<div class="container">
 
-button.addEventListener('click',async()=>{
-  const f=imageInput.files[0];
-  if(!f){status.className='status error';status.textContent='Please upload a chart image first.';return}
-  button.disabled=true; results.style.display='none';
-  status.className='status'; status.textContent='Analyzing chart…';
-  try{
-    const b64=await compressImage(f, 1600, 0.82);
-    const focus=[...document.querySelectorAll('#focuses input:checked')].map(x=>x.value);
-    const res=await fetch('/api/analyze',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image:b64,asset:document.getElementById('asset').value,timeframe:document.getElementById('timeframe').value,focus})
-    });
-    const text=await res.text();
-    if(!text || !text.trim()){
-      throw new Error(`Analysis endpoint returned an empty response (HTTP ${res.status}). Check the Cloudflare Pages Function deployment and HF_TOKEN.`);
-    }
-    let data;
-    try{data=JSON.parse(text)}catch(e){
-      throw new Error(`Analysis endpoint returned an invalid response (HTTP ${res.status}). ${text.slice(0,220)}`);
-    }
-    if(!res.ok || data?.error){
-      throw new Error(data?.error || `Analysis request failed (HTTP ${res.status}).`);
-    }
-    if(!res.ok) throw new Error(data.error||'Analysis request failed.');
-    render(data); status.className='status'; status.textContent='Analysis complete.';
-  }catch(e){status.className='status error';status.textContent=e.message||'Analysis failed.'}
-  finally{button.disabled=false}
-});
-</script>
-</body>
-</html>
+<div class="section-heading">
+<div class="section-label">01 / ANALYZER</div>
+
+<h2>
+One workspace.<br>
+Multiple timeframes.
+</h2>
+
+<p>
+Upload up to five chart images at once. Give each image
+its own timeframe so ChartLens can compare context across
+the charts.
+</p>
+</div>
+
+<div class="analyzer-shell">
+
+<div class="analyzer-header">
+
+<div>
+<strong>Chart Analyzer</strong>
+<div class="status">
+<span class="status-dot"></span>
+READY
+</div>
+</div>
+
+<div class="muted" id="uploadCounter">
+0 / 5 charts
+</div>
+
+</div>
+
+<div class="analyzer-grid">
+
+<!-- UPLOAD -->
+
+<div class="upload-panel">
+
+<div
+class="drop-zone"
+id="dropZone"
+>
+
+<div>
+
+<div class="upload-symbol">
+＋
+</div>
+
+<h3>
+Drop your charts here
+</h3>
+
+<p>
+Upload up to five PNG, JPG or WEBP charts.
+</p>
+
+<div class="upload-note">
+Each chart can have a different timeframe.
+</div>
+
+<button
+class="btn btn-primary"
+style="margin-top:17px"
+onclick="document.getElementById('chartInput').click()"
+>
+Choose Charts
+</button>
+
+<input
+id="chartInput"
+class="file-input"
+type="file"
+accept="image/png,image/jpeg,image/webp"
+multiple
+>
+
+</div>
+
+</div>
+
+<div
+class="preview-grid"
+id="previewGrid"
+></div>
+
+</div>
+
+
+<!-- CONTROLS -->
+
+<div class="controls">
+
+<div class="field">
+<label>Instrument</label>
+
+<input
+id="instrument"
+type="text"
+placeholder="Example: XAU/USD"
+value="XAU/USD"
+>
+</
