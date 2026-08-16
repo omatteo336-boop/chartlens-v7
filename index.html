@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07090d">
+  <meta name="description" content="ChartLens — structured AI chart intelligence, journal and multi-timeframe chart workspace.">
+  <title>ChartLens — AI Chart Intelligence</title>
+
+  <style>
+    :root{
+      --bg:#07090d;
+      --bg2:#0b0e14;
+      --panel:#10141c;
+      --panel2:#141923;
+      --panel3:#0c1017;
+      --border:rgba(255,255,255,.09);
+      --border2:rgba(255,255,255,.15);
+      --text:#f4f7fb;
+      --muted:#929baa;
+      --muted2:#687181;
+      --green:#43e6a5;
+      --green2:#1fbd82;
+      --red:#ff6575;
+      --yellow:#f3c969;
+      --blue:#6ca8ff;
+      --shadow:0 25px 80px rgba(0,0,0,.35);
+      --radius:18px;
+      --max:1240px;
+    }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 50% -10%,rgba(67,230,165,.08),transparent 35%),
+        linear-gradient(180deg,var(--bg),#080b10 55%,var(--bg));
+      line-height:1.55;
+    }
+    body.modal-open{overflow:hidden}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%}
+    .container{width:min(var(--max),calc(100% - 36px));margin:auto}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
+    .green{color:var(--green)}
+    .danger{color:var(--red)}
+
+    /* NAV */
+    .nav{
+      position:sticky;top:0;z-index:100;
+      backdrop-filter:blur(18px);
+      background:rgba(7,9,13,.86);
+      border-bottom:1px solid var(--border);
+    }
+    .nav-inner{
+      min-height:70px;display:flex;align-items:center;
+      justify-content:space-between;gap:20px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      font-weight:900;letter-spacing:.09em;white-space:nowrap;
+    }
+    .brand-mark{
+      width:33px;height:33px;display:grid;place-items:center;
+      border:1px solid rgba(67,230,165,.4);
+      background:rgba(67,230,165,.08);
+      color:var(--green);border-radius:9px;
+    }
+    .nav-links{display:flex;align-items:center;gap:24px;color:var(--muted);font-size:13px}
+    .nav-links a:hover{color:var(--text)}
+    .nav-actions{display:flex;align-items:center;gap:9px}
+    .btn{
+      border:1px solid var(--border2);background:var(--panel);
+      color:var(--text);padding:10px 15px;border-radius:10px;
+      font-weight:750;transition:.18s ease;
+    }
+    .btn:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.28)}
+    .btn-primary{border-color:rgba(67,230,165,.4);background:var(--green);color:#04120d}
+    .btn-primary:hover{background:#61ecb6}
+    .btn-danger{border-color:rgba(255,101,117,.25);color:#ff9aa6}
+    .btn-small{padding:7px 10px;font-size:12px}
+
+    /* HERO */
+    .hero{padding:92px 0 62px;text-align:center}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:8px;padding:7px 11px;
+      border:1px solid rgba(67,230,165,.18);border-radius:999px;
+      background:rgba(67,230,165,.06);color:var(--green);
+      font-size:10px;font-weight:900;letter-spacing:.13em;
+    }
+    .hero h1{
+      max-width:970px;margin:23px auto 18px;
+      font-size:clamp(42px,7vw,82px);line-height:.98;
+      letter-spacing:-.055em;
+    }
+    .hero h1 span{color:var(--green)}
+    .hero p{max-width:750px;margin:auto;color:var(--muted);font-size:16px}
+    .hero-actions{margin-top:27px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+    .hero-note{margin-top:15px;color:var(--muted2);font-size:11px}
+
+    /* SECTIONS */
+    .section{padding:76px 0}
+    .section-heading{max-width:720px;margin-bottom:30px}
+    .section-label{color:var(--green);font-size:10px;font-weight:900;letter-spacing:.14em;margin-bottom:9px}
+    .section-heading h2{font-size:clamp(30px,5vw,48px);letter-spacing:-.04em;line-height:1.04;margin-bottom:10px}
+    .section-heading p{color:var(--muted)}
+
+    /* ANALYZER */
+    .analyzer-shell{
+      border:1px solid var(--border);border-radius:23px;
+      background:linear-gradient(145deg,rgba(255,255,255,.025),transparent),var(--panel);
+      box-shadow:var(--shadow);overflow:hidden;
+    }
+    .analyzer-top{
+      padding:21px 25px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;gap:16px;align-items:center;
+    }
+    .status{display:inline-flex;align-items:center;gap:8px;color:var(--green);font-size:11px;font-weight:850}
+    .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(67,230,165,.7)}
+    .analyzer-grid{display:grid;grid-template-columns:1.45fr .85fr}
+    .upload-area{padding:25px;border-right:1px solid var(--border)}
+    .drop-zone{
+      min-height:285px;border:1px dashed rgba(255,255,255,.18);border-radius:17px;
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:28px;background:radial-gradient(circle at center,rgba(67,230,165,.05),transparent 55%),rgba(255,255,255,.015);
+      transition:.2s;
+    }
+    .drop-zone.dragging{border-color:var(--green);background:rgba(67,230,165,.07)}
+    .upload-icon{
+      width:58px;height:58px;margin:0 auto 14px;border-radius:15px;
+      display:grid;place-items:center;background:rgba(67,230,165,.08);color:var(--green);font-size:27px;
+    }
+    .drop-zone h3{font-size:19px;margin-bottom:6px}
+    .drop-zone p{color:var(--muted);font-size:13px}
+    .upload-note{color:var(--muted2);font-size:11px;margin-top:11px}
+    .file-input{display:none}
+
+    .preview-grid{
+      margin-top:18px;display:grid;grid-template-columns:repeat(5,1fr);gap:9px;
+    }
+    .preview-card{
+      position:relative;overflow:hidden;border:1px solid var(--border);
+      border-radius:11px;background:#080a0e;min-width:0;
+    }
+    .preview-card img{display:block;width:100%;height:105px;object-fit:cover}
+    .preview-info{padding:8px}
+    .preview-name{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+    .preview-info select{
+      width:100%;background:#0c1017;border:1px solid var(--border);
+      color:var(--text);padding:6px;border-radius:7px;font-size:10px;
+    }
+    .remove-preview{
+      position:absolute;top:5px;right:5px;width:24px;height:24px;border:0;
+      border-radius:50%;background:rgba(0,0,0,.78);color:white;z-index:2;
+    }
+
+    .controls{padding:25px}
+    .control-group{margin-bottom:19px}
+    .control-group label{
+      display:block;color:var(--muted);font-size:10px;font-weight:850;
+      margin-bottom:7px;text-transform:uppercase;letter-spacing:.07em;
+    }
+    .control-group input,.control-group select,.control-group textarea{
+      width:100%;background:#0b0f16;color:var(--text);border:1px solid var(--border);
+      border-radius:9px;padding:11px;outline:none;
+    }
+    .control-group input:focus,.control-group select:focus,.control-group textarea:focus{border-color:rgba(67,230,165,.5)}
+    .focus-options{display:flex;flex-wrap:wrap;gap:6px}
+    .focus-chip{
+      border:1px solid var(--border);background:#0b0f16;color:var(--muted);
+      padding:6px 8px;border-radius:7px;font-size:10px;
+    }
+    .focus-chip.active{color:var(--green);border-color:rgba(67,230,165,.4);background:rgba(67,230,165,.07)}
+    .analyze-btn{
+      width:100%;margin-top:2px;padding:13px;border:0;border-radius:10px;
+      background:var(--green);color:#04120d;font-weight:900;font-size:14px;
+    }
+    .analyze-btn:disabled{opacity:.5;cursor:not-allowed}
+    .privacy-note{margin-top:11px;text-align:center;color:var(--muted2);font-size:10px}
+
+    .checks{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:9px;
+      padding:18px 25px;border-top:1px solid var(--border);
+    }
+    .check{padding:12px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.015)}
+    .check strong{display:block;font-size:11px;margin-bottom:2px}
+    .check span{color:var(--muted);font-size:10px}
+
+    /* RESULTS */
+    .result{
+      margin-top:25px;border:1px solid var(--border);border-radius:20px;
+      background:var(--panel);overflow:hidden;
+    }
+    .result-header{
+      padding:23px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    }
+    .result-title h2{font-size:24px;letter-spacing:-.03em}
+    .result-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+    .meta-pill{border:1px solid var(--border);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:10px}
+    .confidence{
+      min-width:115px;text-align:center;padding:12px;border:1px solid rgba(67,230,165,.2);
+      border-radius:12px;background:rgba(67,230,165,.05)
+    }
+    .confidence strong{display:block;color:var(--green);font-size:25px}
+    .confidence span{color:var(--muted);font-size:9px;text-transform:uppercase}
+    .step-list{padding:5px 23px 20px}
+    .analysis-step{display:grid;grid-template-columns:58px 1fr;gap:17px;padding:24px 0;border-bottom:1px solid var(--border)}
+    .analysis-step:last-child{border-bottom:0}
+    .step-number{color:var(--green);font-size:11px;font-weight:900;padding-top:4px}
+    .analysis-step h3{font-size:16px;margin-bottom:6px}
+    .analysis-step p{color:var(--muted);font-size:13px}
+    .observation-grid{margin-top:13px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .observation{padding:11px;border:1px solid var(--border);border-radius:9px;background:rgba(255,255,255,.015)}
+    .observation strong{display:block;font-size:10px;margin-bottom:2px}
+    .observation span{color:var(--muted);font-size:11px}
+    .result-actions{padding:19px 23px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap}
+
+    /* DASHBOARD / JOURNAL */
+    .dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .panel{
+      border:1px solid var(--border);border-radius:18px;background:var(--panel);padding:22px;
+    }
+    .panel-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+    .panel-header h3{font-size:17px}
+    .journal-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .journal-form .full{grid-column:1/-1}
+    .journal-form input,.journal-form select,.journal-form textarea{
+      width:100%;background:#0b0f16;color:var(--text);border:1px solid var(--border);
+      border-radius:9px;padding:10px;outline:none;
+    }
+    .journal-form textarea{min-height:100px;resize:vertical}
+    .journal-list{display:grid;gap:9px;max-height:420px;overflow:auto}
+    .journal-item{
+      border:1px solid var(--border);border-radius:11px;padding:12px;background:rgba(255,255,255,.015)
+    }
+    .journal-item-top{display:flex;justify-content:space-between;gap:10px}
+    .journal-item strong{font-size:12px}
+    .journal-item small{color:var(--muted2);font-size:10px}
+    .journal-item p{color:var(--muted);font-size:11px;margin-top:5px}
+    .tag{
+      display:inline-block;margin-top:7px;padding:3px 7px;border-radius:999px;
+      background:rgba(67,230,165,.07);color:var(--green);font-size:9px
+    }
+
+    /* FEATURES */
+    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .feature{border:1px solid var(--border);background:var(--panel);padding:22px;border-radius:var(--radius)}
+    .feature-icon{color:var(--green);font-size:21px;margin-bottom:12px}
+    .feature h3{font-size:16px;margin-bottom:6px}
+    .feature p{color:var(--muted);font-size:12px}
+
+    /* ACADEMY */
+    .academy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .lesson{
+      border:1px solid var(--border);background:var(--panel);border-radius:16px;
+      padding:20px;cursor:pointer;transition:.18s
+    }
+    .lesson:hover{transform:translateY(-2px);border-color:rgba(67,230,165,.25)}
+    .lesson .lesson-num{color:var(--green);font-size:10px;font-weight:900}
+    .lesson h3{font-size:16px;margin:8px 0 5px}
+    .lesson p{color:var(--muted);font-size:12px}
+
+    /* EXTENSION */
+    .extension{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+    .extension-card{border:1px solid var(--border);background:var(--panel);border-radius:18px;padding:25px}
+    .extension-card h3{font-size:20px;margin-bottom:7px}
+    .extension-card p{color:var(--muted);font-size:13px}
+    .extension-list{list-style:none;margin-top:15px}
+    .extension-list li{padding:8px 0;border-bottom:1px solid var(--border);color:var(--muted);font-size:12px}
+    .extension-list li::before{content:"✓";color:var(--green);margin-right:8px}
+    .browser-mock{min-height:260px;border:1px solid var(--border2);border-radius:14px;background:#090c12;overflow:hidden}
+    .browser-bar{height:34px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;padding:0 11px}
+    .browser-dot{width:7px;height:7px;border-radius:50%;background:#444}
+    .chart-mock{height:225px;display:grid;place-items:center;color:var(--muted2);position:relative}
+    .chart-lines{position:absolute;inset:25px;background:repeating-linear-gradient(0deg,transparent 0 35px,rgba(255,255,255,.05) 36px),repeating-linear-gradient(90deg,transparent 0 60px,rgba(255,255,255,.04) 61px)}
+    .fake-line{position:absolute;width:70%;height:3px;background:var(--green);transform:rotate(-12deg);box-shadow:0 0 15px rgba(67,230,165,.35)}
+    .analyze-extension{position:absolute;right:15px;top:15px;background:var(--green);color:#03120d;padding:8px 11px;border-radius:8px;font-weight:900;font-size:10px;z-index:2}
+
+    /* TRUST / PRICING */
+    .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .trust{padding:19px;border:1px solid var(--border);border-radius:14px;background:var(--panel)}
+    .trust strong{display:block;margin-bottom:4px;font-size:12px}
+    .trust span{color:var(--muted);font-size:11px}
+    .pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+    .price-card{padding:27px;border:1px solid var(--border);border-radius:18px;background:var(--panel)}
+    .price-card.premium{border-color:rgba(67,230,165,.32);box-shadow:0 0 50px rgba(67,230,165,.05)}
+    .trial{display:inline-block;margin-bottom:12px;padding:5px 8px;border-radius:6px;background:rgba(67,230,165,.08);color:var(--green);font-size:10px;font-weight:800}
+    .price-card h3{font-size:20px}
+    .price{margin:12px 0 18px;font-size:42px;font-weight:900;letter-spacing:-.05em}
+    .price small{color:var(--muted);font-size:12px;font-weight:500}
+    .price-card ul{list-style:none;margin-bottom:22px}
+    .price-card li{padding:7px 0;color:var(--muted);font-size:12px}
+    .price-card li::before{content:"✓";color:var(--green);margin-right:8px}
+
+    /* MODAL / TOAST */
+    .modal-backdrop{
+      position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);
+      backdrop-filter:blur(8px);display:grid;place-items:center;padding:18px;
+    }
+    .modal{
+      width:min(620px,100%);max-height:88vh;overflow:auto;
+      border:1px solid var(--border2);border-radius:18px;background:var(--panel);
+      box-shadow:var(--shadow);padding:23px;
+    }
+    .modal-header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}
+    .modal-header h3{font-size:19px}
+    .icon-btn{
+      width:32px;height:32px;border:1px solid var(--border);border-radius:9px;
+      background:var(--panel3);color:var(--text)
+    }
+    .modal-content p{color:var(--muted);font-size:13px;margin-bottom:10px}
+    .modal-content ul{padding-left:18px;color:var(--muted);font-size:13px}
+    .modal-content li{margin:7px 0}
+    .toast{
+      position:fixed;right:18px;bottom:18px;z-index:300;
+      padding:12px 15px;border:1px solid var(--border2);border-radius:10px;
+      background:#111722;color:var(--text);box-shadow:var(--shadow);
+      font-size:12px;max-width:340px
+    }
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:42px 0;color:var(--muted2);font-size:11px}
+    .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:25px}
+    .footer-col strong{display:block;color:var(--text);margin-bottom:10px}
+    .footer-col a{display:block;margin-bottom:6px}
+    .footer-col a:hover{color:var(--text)}
+    .copyright{margin-top:30px;padding-top:18px;border-top:1px solid var(--border)}
+
+    /* MOBILE */
+    @media(max-width:900px){
+      .nav-links{display:none}
+      .analyzer-grid,.extension,.dashboard-grid{grid-template-columns:1fr}
+      .upload-area{border-right:0;border-bottom:1px solid var(--border)}
+      .preview-grid{grid-template-columns:repeat(2,1fr)}
+      .checks,.trust-grid{grid-template-columns:repeat(2,1fr)}
+      .feature-grid,.academy-grid{grid-template-columns:1fr 1fr}
+      .footer-grid{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:600px){
+      .container{width:min(var(--max),calc(100% - 24px))}
+      .hero{padding:62px 0 46px}
+      .section{padding:53px 0}
+      .nav-inner{min-height:63px}
+      .nav-actions .btn:first-child{display:none}
+      .analyzer-top,.result-header{align-items:flex-start;flex-direction:column}
+      .feature-grid,.academy-grid,.pricing-grid{grid-template-columns:1fr}
+      .checks,.trust-grid{grid-template-columns:1fr}
+      .footer-grid{grid-template-columns:1fr}
+      .observation-grid{grid-template-columns:1fr}
+      .analysis-step{grid-template-columns:43px 1fr}
+      .upload-area,.controls{padding:17px}
+      .journal-form{grid-template-columns:1fr}
+      .journal-form .full{grid-column:auto}
+    }
+  </style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="brand">
+      <span class="brand-mark">✦</span>
+      <span>CHARTLENS</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="#analyzer">Analyzer</a>
+      <a href="#academy">Academy</a>
+      <a href="#journal">Journal</a>
+      <a href="#extension">Extension</a>
+    </div>
+
+    <div class="nav-actions">
+      <button class="btn" id="signInBtn">Sign In</button>
+      <button class="btn btn-primary" onclick="scrollToAnalyzer()">Analyze Chart</button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="eyebrow">✦ AI CHART INTELLIGENCE</div>
+    <h1>SEE THE MARKET.<br><span>UNDERSTAND THE CHART.</span></h1>
+    <p>
+      Upload up to five charts from different timeframes and send them together
+      for structured, evidence-based educational analysis.
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="scrollToAnalyzer()">Start Analysis</button>
+      <a class="btn" href="#academy">Explore Academy</a>
+    </div>
+    <div class="hero-note">No guaranteed outcomes. Analysis is educational and based only on visible chart evidence.</div>
+  </div>
+</header>
+
+<section class="section" id="analyzer">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">01 / ANALYZER</div>
+      <h2>One workspace for the whole chart picture.</h2>
+      <p>Use several timeframes together, label each image, choose your focus, and let the connected backend return structured JSON.</p>
+    </div>
+
+    <div class="analyzer-shell">
+      <div class="analyzer-top">
+        <div>
+          <strong>Multi-Timeframe Chart Analyzer</strong>
+          <div class="muted" style="font-size:11px;margin-top:3px">Maximum 5 images • 10 MB each</div>
+        </div>
+        <div class="status"><span class="status-dot"></span> ANALYZER ONLINE</div>
+      </div>
+
+      <div class="analyzer-grid">
+        <div class="upload-area">
+          <div class="drop-zone" id="dropZone">
+            <div>
+              <div class="upload-icon">↥</div>
+              <h3>Drop charts here</h3>
+              <p>or choose up to five chart screenshots at once</p>
+              <div style="margin-top:16px">
+                <button class="btn btn-primary" id="chooseBtn" type="button">Choose Images</button>
+              </div>
+              <div class="upload-note">PNG, JPG, WEBP • each image can have its own timeframe</div>
+            </div>
+          </div>
+
+          <input class="file-input" id="chartInput" type="file" accept="image/*" multiple>
+
+          <div class="preview-grid" id="previewGrid"></div>
+        </div>
+
+        <div class="controls">
+          <div class="control-group">
+            <label for="instrument">Instrument / Asset</label>
+            <input id="instrument" type="text" placeholder="e.g. BTC/USD, EUR/USD, AAPL">
+          </div>
+
+          <div class="control-group">
+            <label for="analysisFocus">Analysis focus</label>
+            <select id="analysisFocus">
+              <option value="General chart analysis">General chart analysis</option>
+              <option value="Market structure">Market structure</option>
+              <option value="Trend and momentum">Trend and momentum</option>
+              <option value="Support and resistance">Support and resistance</option>
+              <option value="Patterns">Chart patterns</option>
+              <option value="Supply and demand">Supply and demand</option>
+              <option value="Educational breakdown">Educational breakdown</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>Quick focus</label>
+            <div class="focus-options" id="focusOptions">
+              <button class="focus-chip active" data-focus="General chart analysis">General</button>
+              <button class="focus-chip" data-focus="Market structure">Structure</button>
+              <button class="focus-chip" data-focus="Trend and momentum">Momentum</button>
+              <button class="focus-chip" data-focus="Support and resistance">Levels</button>
+              <button class="focus-chip" data-focus="Patterns">Patterns</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label for="notes">Optional context</label>
+            <textarea id="notes" placeholder="Anything useful you want the analyzer to know about the chart..."></textarea>
+          </div>
+
+          <button class="analyze-btn" id="analyzeBtn" disabled>Analyze Uploaded Charts</button>
+          <div class="privacy-note">Images are sent to /api/analyze. The UI does not invent chart data.</div>
+        </div>
+      </div>
+
+      <div class="checks">
+        <div class="check"><strong>5 Timeframes</strong><span>Compare context across images.</span></div>
+        <div class="check"><strong>Evidence First</strong><span>Ambiguity stays visible.</span></div>
+        <div class="check"><strong>Structured Output</strong><span>Consistent analysis fields.</span></div>
+        <div class="check"><strong>Journal Ready</strong><span>Save your review locally.</span></div>
+      </div>
+    </div>
+
+    <div class="result hidden" id="result">
+      <div class="result-header">
+        <div class="result-title">
+          <h2 id="resultTitle">Chart Analysis</h2>
+          <div class="result-meta">
+            <span class="meta-pill" id="resultAsset">Asset</span>
+            <span class="meta-pill" id="resultTimeframe">Timeframe</span>
+            <span class="meta-pill" id="resultBias">Bias</span>
+          </div>
+        </div>
+        <div class="confidence">
+          <strong id="confidenceScore">0</strong>
+          <span id="confidenceLabel">confidence score</span>
+        </div>
+      </div>
+
+      <div class="step-list" id="analysisSteps"></div>
+
+      <div class="result-actions">
+        <button class="btn btn-primary" id="saveJournalBtn">Save to Journal</button>
+        <button class="btn" id="copyResultBtn">Copy Analysis</button>
+        <button class="btn" id="clearResultBtn">Clear Result</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="journal">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">02 / JOURNAL</div>
+      <h2>Turn analysis into a learning record.</h2>
+      <p>Journal entries are stored locally in your browser. Nothing here requires a paid database.</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>New Journal Entry</h3>
+          <span class="muted" style="font-size:10px">Local storage</span>
+        </div>
+
+        <form class="journal-form" id="journalForm">
+          <input id="journalTitle" placeholder="Entry title" required>
+          <input id="journalAsset" placeholder="Asset">
+          <select id="journalBias">
+            <option value="neutral/unclear">Neutral / unclear</option>
+            <option value="bullish">Bullish</option>
+            <option value="bearish">Bearish</option>
+          </select>
+          <input id="journalTimeframe" placeholder="Timeframe">
+          <textarea class="full" id="journalNotes" placeholder="What did you observe? What did you learn?"></textarea>
+          <button class="btn btn-primary full" type="submit">Save Journal Entry</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Journal History</h3>
+          <button class="btn btn-small" id="clearJournalBtn" type="button">Clear All</button>
+        </div>
+        <div class="journal-list" id="journalList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="academy">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">03 / ACADEMY</div>
+      <h2>Learn what the analyzer is looking for.</h2>
+      <p>Short lessons designed to help you understand chart evidence instead of blindly following an output.</p>
+    </div>
+
+    <div class="academy-grid">
+      <article class="lesson" data-lesson="Market Structure">
+        <div class="lesson-num">LESSON 01</div>
+        <h3>Market Structure</h3>
+        <p>Understand swing highs, swing lows, continuation and possible structural change.</p>
+      </article>
+      <article class="lesson" data-lesson="Price Location">
+        <div class="lesson-num">LESSON 02</div>
+        <h3>Price Location</h3>
+        <p>Learn why where price sits can matter as much as the direction of movement.</p>
+      </article>
+      <article class="lesson" data-lesson="Chart Patterns">
+        <div class="lesson-num">LESSON 03</div>
+        <h3>Chart Patterns</h3>
+        <p>Study patterns only when their visible structure actually supports the idea.</p>
+      </article>
+      <article class="lesson" data-lesson="Momentum">
+        <div class="lesson-num">LESSON 04</div>
+        <h3>Momentum & Behaviour</h3>
+        <p>Separate visible momentum evidence from assumptions about what happens next.</p>
+      </article>
+      <article class="lesson" data-lesson="Key Levels">
+        <div class="lesson-num">LESSON 05</div>
+        <h3>Key Levels</h3>
+        <p>Learn how readable price scales and repeated reactions can define useful areas.</p>
+      </article>
+      <article class="lesson" data-lesson="Risk of Assumptions">
+        <div class="lesson-num">LESSON 06</div>
+        <h3>Evidence vs Assumption</h3>
+        <p>Know when a chart does not contain enough visible information to support a claim.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">04 / WORKSPACE</div>
+      <h2>Built around the workflow, not just a single AI answer.</h2>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature"><div class="feature-icon">▦</div><h3>Five-Chart Upload</h3><p>Upload several screenshots in one action and assign a different timeframe to each.</p></div>
+      <div class="feature"><div class="feature-icon">◈</div><h3>Structured Evidence</h3><p>Analysis is organized into predictable fields so you can review it instead of reading a wall of text.</p></div>
+      <div class="feature"><div class="feature-icon">⌁</div><h3>Scenario Thinking</h3><p>Conditional scenarios keep the interface focused on evidence rather than certainty.</p></div>
+      <div class="feature"><div class="feature-icon">✎</div><h3>Journal</h3><p>Save observations locally and build a personal learning history.</p></div>
+      <div class="feature"><div class="feature-icon">◫</div><h3>Chrome Extension Ready</h3><p>A future extension can open ChartLens beside a charting page and send screenshots to the same API.</p></div>
+      <div class="feature"><div class="feature-icon">↗</div><h3>Replaceable AI Layer</h3><p>The frontend talks to /api/analyze, so the model provider can be changed later without rebuilding the UI.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="extension">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">05 / CHROME EXTENSION</div>
+      <h2>Designed for a professional browser workflow.</h2>
+      <p>The website is ready for a future Chrome extension that captures a chart, opens ChartLens, and sends the selected image to the same backend.</p>
+    </div>
+
+    <div class="extension">
+      <div class="extension-card">
+        <h3>ChartLens Browser Companion</h3>
+        <p>Keep the main analysis engine on the website while the extension becomes the fast entry point from a charting page.</p>
+        <ul class="extension-list">
+          <li>Capture or select the current chart image</li>
+          <li>Choose the timeframe before sending</li>
+          <li>Open the ChartLens analyzer in one click</li>
+          <li>Reuse the same /api/analyze endpoint</li>
+          <li>Keep the extension separate from the AI provider</li>
+        </ul>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="showModal('extensionModal')">View Extension Plan</button>
+      </div>
+
+      <div class="browser-mock">
+        <div class="browser-bar"><span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span></div>
+        <div class="chart-mock">
+          <div class="chart-lines"></div>
+          <div class="fake-line"></div>
+          <div class="analyze-extension">Analyze with ChartLens</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">06 / TRUST</div>
+      <h2>Clear boundaries make the product better.</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="trust"><strong>Visible evidence only</strong><span>Claims should come from what the image actually shows.</span></div>
+      <div class="trust"><strong>Ambiguity is allowed</strong><span>Unreadable or missing information can be reported as unavailable.</span></div>
+      <div class="trust"><strong>No guaranteed outcomes</strong><span>The product does not promise profits or certainty.</span></div>
+      <div class="trust"><strong>Provider independent</strong><span>The AI service can be replaced later without changing the core UI.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-heading">
+      <div class="section-label">07 / PRICING</div>
+      <h2>Start simple. Add paid infrastructure only when you actually need it.</h2>
+      <p>This page contains pricing UI only. No payment processor is connected by this HTML file.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <span class="trial">CURRENT WORKSPACE</span>
+        <h3>Free</h3>
+        <div class="price">$0 <small>for the UI</small></div>
+        <ul>
+          <li>Multi-timeframe upload interface</li>
+          <li>Journal with local storage</li>
+          <li>Academy and learning workspace</li>
+          <li>Chrome extension-ready architecture</li>
+        </ul>
+        <button class="btn btn-primary" onclick="scrollToAnalyzer()">Use ChartLens</button>
+      </div>
+
+      <div class="price-card premium">
+        <span class="trial">FUTURE</span>
+        <h3>Pro</h3>
+        <div class="price">— <small>payment integration later</small></div>
+        <ul>
+          <li>Higher analysis limits</li>
+          <li>Cloud journal sync</li>
+          <li>Advanced workspace features</li>
+          <li>Optional premium AI provider</li>
+        </ul>
+        <button class="btn" onclick="toast('Pro billing is not connected yet.')">Coming Later</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <strong>CHARTLENS</strong>
+        <div>AI chart intelligence built around visible evidence, learning and review.</div>
+      </div>
+      <div class="footer-col">
+        <strong>Workspace</strong>
+        <a href="#analyzer">Analyzer</a>
+        <a href="#journal">Journal</a>
+        <a href="#academy">Academy</a>
+      </div>
+      <div class="footer-col">
+        <strong>Product</strong>
+        <a href="#extension">Extension</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#" onclick="showModal('privacyModal');return false">Privacy</a>
+      </div>
+      <div class="footer-col">
+        <strong>Support</strong>
+        <a href="#" onclick="showModal('aboutModal');return false">About ChartLens</a>
+        <a href="#" onclick="showModal('apiModal');return false">API architecture</a>
+      </div>
+    </div>
+    <div class="copyright">© 2026 ChartLens. Educational software interface. Chart information is not a guarantee of future results.</div>
+  </div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-backdrop hidden" id="modalBackdrop" onclick="closeModal(event)">
+  <div class="modal" id="extensionModal">
+    <div class="modal-header"><h3>Chrome Extension Plan</h3><button class="icon-btn" onclick="hideModal()">×</button></div>
+    <div class="modal-content">
+      <p>The extension can remain lightweight: its job is to capture/select a chart and hand it to ChartLens.</p>
+      <ul>
+        <li>Manifest V3 extension.</li>
+        <li>Popup with timeframe and analysis focus.</li>
+        <li>Optional screenshot capture.</li>
+        <li>POST the image to the same ChartLens endpoint.</li>
+        <li>Open the website for the full result and journal.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="privacyModal">
+    <div class="modal-header"><h3>Privacy</h3><button class="icon-btn" onclick="hideModal()">×</button></div>
+    <div class="modal-content">
+      <p>The interface does not create a database by itself. Journal entries are kept in browser local storage.</p>
+      <p>Uploaded charts are sent only when you press the analysis button and the page successfully reaches the configured API endpoint.</p>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="aboutModal">
+    <div class="modal-header"><h3>About ChartLens</h3><button class="icon-btn" onclick="hideModal()">×</button></div>
+    <div class="modal-content">
+      <p>ChartLens is a structured chart-learning workspace. The product separates the interface from the AI provider so the backend model can change later.</p>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="apiModal">
+    <div class="modal-header"><h3>API Architecture</h3><button class="icon-btn" onclick="hideModal()">×</button></div>
+    <div class="modal-content">
+      <p>The browser sends multipart form data to <strong>/api/analyze</strong>.</p>
+      <p>The Pages Function validates up to five images, preserves their timeframe labels, sends them to the configured AI layer, and returns structured JSON.</p>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="lessonModal">
+    <div class="modal-header"><h3 id="lessonTitle">Lesson</h3><button class="icon-btn" onclick="hideModal()">×</button></div>
+    <div class="modal-content"><p id="lessonText"></p></div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toastBox"></div>
+
+<script>
+  const state = {
+    files: [],
+    lastResult: null
+  };
+
+  const chartInput = document.getElementById("chartInput");
+  const chooseBtn = document.getElementById("chooseBtn");
+  const dropZone = document.getElementById("dropZone");
+  const previewGrid = document.getElementById("previewGrid");
+  const analyzeBtn = document.getElementById("analyzeBtn");
+  const result = document.getElementById("result");
+  const analysisSteps = document.getElementById("analysisSteps");
+
+  const timeframes = [
+    "1 minute","5 minutes","15 minutes","30 minutes",
+    "1 hour","4 hours","Daily","Weekly","Monthly","Unknown"
+  ];
+
+  const fieldLabels = {
+    overall_assessment: "Overall Assessment",
+    market_structure: "Market Structure",
+    trend: "Trend",
+    support_resistance: "Support / Resistance",
+    liquidity: "Liquidity",
+    supply_demand: "Supply / Demand",
+    bos_choch: "BOS / CHoCH",
+    candlesticks: "Candlesticks",
+    chart_patterns: "Chart Patterns",
+    moving_averages: "Moving Averages",
+    momentum_volatility: "Momentum / Volatility",
+    volume: "Volume",
+    key_levels: "Key Levels",
+    scenario: "Scenario",
+    invalidation: "Invalidation"
+  };
+
+  function scrollToAnalyzer(){
+    document.getElementById("analyzer").scrollIntoView({behavior:"smooth"});
+  }
+
+  chooseBtn.addEventListener("click", () => chartInput.click());
+
+  chartInput.addEventListener("change", () => {
+    addFiles([...chartInput.files]);
+    chartInput.value = "";
+  });
+
+  ["dragenter","dragover"].forEach(type => {
+    dropZone.addEventListener(type, e => {
+      e.preventDefault();
+      dropZone.classList.add("dragging");
+    });
+  });
+
+  ["dragleave","drop"].forEach(type => {
+    dropZone.addEventListener(type, e => {
+      e.preventDefault();
+      dropZone.classList.remove("dragging");
+    });
+  });
+
+  dropZone.addEventListener("drop", e => addFiles([...e.dataTransfer.files]));
+
+  function addFiles(files){
+    const images = files.filter(file => file.type.startsWith("image/"));
+    if(!images.length){
+      toast("Please choose image files.");
+      return;
+    }
+
+    for(const file of images){
+      if(state.files.length >= 5){
+        toast("Maximum of 5 charts at once.");
+        break;
+      }
+      if(file.size > 10 * 1024 * 1024){
+        toast(file.name + " is larger than 10 MB.");
+        continue;
+      }
+      state.files.push({
+        file,
+        timeframe:"Unknown",
+        url:URL.createObjectURL(file)
+      });
+    }
+
+    renderPreviews();
+  }
+
+  function renderPreviews(){
+    previewGrid.innerHTML = "";
+
+    state.files.forEach((item,index) => {
+      const card = document.createElement("div");
+      card.className = "preview-card";
+
+      const options = timeframes.map(tf =>
+        `<option ${tf === item.timeframe ? "selected" : ""}>${escapeHtml(tf)}</option>`
+      ).join("");
+
+      card.innerHTML = `
+        <button class="remove-preview" type="button" aria-label="Remove chart">×</button>
+        <img src="${item.url}" alt="Chart preview ${index+1}">
+        <div class="preview-info">
+          <div class="preview-name">${escapeHtml(item.file.name)}</div>
+          <select aria-label="Timeframe for chart ${index+1}">${options}</select>
+        </div>
+      `;
+
+      card.querySelector(".remove-preview").addEventListener("click", () => {
+        URL.revokeObjectURL(item.url);
+        state.files.splice(index,1);
+        renderPreviews();
+      });
+
+      card.querySelector("select").addEventListener("change", e => {
+        item.timeframe = e.target.value;
+      });
+
+      previewGrid.appendChild(card);
+    });
+
+    analyzeBtn.disabled = state.files.length === 0;
+  }
+
+  document.querySelectorAll(".focus-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".focus-chip").forEach(x => x.classList.remove("active"));
+      chip.classList.add("active");
+      document.getElementById("analysisFocus").value = chip.dataset.focus;
+    });
+  });
+
+  document.getElementById("analysisFocus").addEventListener("change", e => {
+    document.querySelectorAll(".focus-chip").forEach(x =>
+      x.classList.toggle("active", x.dataset.focus === e.target.value)
+    );
+  });
+
+  analyzeBtn.addEventListener("click", async () => {
+    if(!state.files.length) return;
+
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = "Analyzing…";
+
+    const formData = new FormData();
+    formData.append("instrument", document.getElementById("instrument").value.trim());
+    formData.append("analysisFocus", document.getElementById("analysisFocus").value);
+    formData.append("notes", document.getElementById("notes").value.trim());
+
+    state.files.forEach((item,index) => {
+      formData.append("charts", item.file, item.file.name);
+      formData.append(`timeframe_${index}`, item.timeframe);
+    });
+
+    try{
+      const response = await fetch("/api/analyze", {
+        method:"POST",
+        body:formData
+      });
+
+      const data = await response.json();
+
+      if(!response.ok){
+        throw new Error(data.error || "Analysis request failed.");
+      }
+
+      state.lastResult = data;
+      renderResult(data);
+      result.classList.remove("hidden");
+      result.scrollIntoView({behavior:"smooth",block:"start"});
+    }catch(error){
+      toast(error.message || "Could not reach the analyzer.");
+    }finally{
+      analyzeBtn.disabled = state.files.length === 0;
+      analyzeBtn.textContent = "Analyze Uploaded Charts";
+    }
+  });
+
+  function renderResult(data){
+    document.getElementById("resultTitle").textContent =
+      data.overall_assessment || "Chart Analysis";
+
+    document.getElementById("resultAsset").textContent =
+      data.asset || document.getElementById("instrument").value || "Not specified";
+
+    document.getElementById("resultTimeframe").textContent =
+      data.timeframe || state.files.map(x=>x.timeframe).join(" • ") || "Not available";
+
+    document.getElementById("resultBias").textContent =
+      data.bias || "neutral/unclear";
+
+    document.getElementById("confidenceScore").textContent =
+      Number.isFinite(Number(data.confidence_score))
+        ? Math.round(Number(data.confidence_score))
+        : 0;
+
+    document.getElementById("confidenceLabel").textContent =
+      `${data.confidence || "low"} confidence`;
+
+    analysisSteps.innerHTML = "";
+
+    const keys = Object.keys(fieldLabels);
+
+    keys.forEach((key,index) => {
+      const value = data[key] ?? "Not available from the image.";
+      const step = document.createElement("div");
+      step.className = "analysis-step";
+
+      step.innerHTML = `
+        <div class="step-number">${String(index+1).padStart(2,"0")}</div>
+        <div>
+          <h3>${fieldLabels[key]}</h3>
+          <p>${escapeHtml(String(value))}</p>
+        </div>
+      `;
+
+      analysisSteps.appendChild(step);
+    });
+  }
+
+  document.getElementById("copyResultBtn").addEventListener("click", async () => {
+    if(!state.lastResult) return;
+    const text = JSON.stringify(state.lastResult,null,2);
+
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Analysis copied.");
+    }catch{
+      toast("Copy was blocked by the browser.");
+    }
+  });
+
+  document.getElementById("clearResultBtn").addEventListener("click", () => {
+    state.lastResult = null;
+    result.classList.add("hidden");
+    analysisSteps.innerHTML = "";
+  });
+
+  document.getElementById("saveJournalBtn").addEventListener("click", () => {
+    if(!state.lastResult){
+      toast("No analysis to save.");
+      return;
+    }
+
+    const data = state.lastResult;
+    document.getElementById("journalTitle").value =
+      data.overall_assessment || "ChartLens Analysis";
+    document.getElementById("journalAsset").value =
+      data.asset || document.getElementById("instrument").value || "";
+    document.getElementById("journalBias").value =
+      data.bias || "neutral/unclear";
+    document.getElementById("journalTimeframe").value =
+      data.timeframe || state.files.map(x=>x.timeframe).join(", ");
+    document.getElementById("journalNotes").value =
+      data.overall_assessment || "ChartLens analysis saved from the analyzer.";
+
+    document.getElementById("journal").scrollIntoView({behavior:"smooth"});
+    toast("Analysis copied into the journal form.");
+  });
+
+  document.getElementById("journalForm").addEventListener("submit", e => {
+    e.preventDefault();
+
+    const entries = getJournal();
+
+    entries.unshift({
+      id:Date.now(),
+      title:document.getElementById("journalTitle").value.trim(),
+      asset:document.getElementById("journalAsset").value.trim(),
+      bias:document.getElementById("journalBias").value,
+      timeframe:document.getElementById("journalTimeframe").value.trim(),
+      notes:document.getElementById("journalNotes").value.trim(),
+      date:new Date().toLocaleString()
+    });
+
+    localStorage.setItem("chartlens_journal",JSON.stringify(entries));
+    e.target.reset();
+    renderJournal();
+    toast("Journal entry saved locally.");
+  });
+
+  document.getElementById("clearJournalBtn").addEventListener("click", () => {
+    if(!getJournal().length){
+      toast("Journal is already empty.");
+      return;
+    }
+    if(confirm("Clear all local journal entries?")){
+      localStorage.removeItem("chartlens_journal");
+      renderJournal();
+      toast("Journal cleared.");
+    }
+  });
+
+  function getJournal(){
+    try{
+      return JSON.parse(localStorage.getItem("chartlens_journal") || "[]");
+    }catch{
+      return [];
+    }
+  }
+
+  function renderJournal(){
+    const list = document.getElementById("journalList");
+    const entries = getJournal();
+
+    if(!entries.length){
+      list.innerHTML = `<div class="muted" style="font-size:12px;padding:15px 0">No journal entries yet.</div>`;
+      return;
+    }
+
+    list.innerHTML = entries.map(entry => `
+      <div class="journal-item">
+        <div class="journal-item-top">
+          <strong>${escapeHtml(entry.title || "Untitled")}</strong>
+          <small>${escapeHtml(entry.date || "")}</small>
+        </div>
+        <div class="muted" style="font-size:10px;margin-top:2px">
+          ${escapeHtml(entry.asset || "Asset not specified")} • ${escapeHtml(entry.timeframe || "Timeframe not specified")}
+        </div>
+        <span class="tag">${escapeHtml(entry.bias || "neutral/unclear")}</span>
+        <p>${escapeHtml(entry.notes || "")}</p>
+      </div>
+    `).join("");
+  }
+
+  document.querySelectorAll(".lesson").forEach(lesson => {
+    lesson.addEventListener("click", () => {
+      const title = lesson.dataset.lesson;
+      const descriptions = {
+        "Market Structure":"Look for visible swing highs and swing lows first. A structural break should only be called when the chart clearly supports it.",
+        "Price Location":"Price location is about where the current price sits relative to visible prior reactions, ranges and other readable areas.",
+        "Chart Patterns":"A pattern should be identified only when its shape is actually visible. Avoid forcing a familiar pattern onto incomplete or cropped data.",
+        "Momentum":"Momentum can be discussed from visible price behaviour, candle progression and clearly visible indicators. Missing evidence should remain missing.",
+        "Key Levels":"Key levels should be tied to readable price information and visible reactions rather than invented numbers.",
+        "Risk of Assumptions":"A strong chart-learning workflow distinguishes what is visible from what is merely possible. 'Not available from the image' is a valid result."
+      };
+      document.getElementById("lessonTitle").textContent = title;
+      document.getElementById("lessonText").textContent = descriptions[title] || "Lesson content.";
+      showModal("lessonModal");
+    });
+  });
+
+  document.getElementById("signInBtn").addEventListener("click", () => {
+    toast("Account authentication is not connected yet.");
+  });
+
+  function showModal(id){
+    const backdrop = document.getElementById("modalBackdrop");
+    backdrop.classList.remove("hidden");
+
+    document.querySelectorAll("#modalBackdrop .modal").forEach(m => m.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+    document.body.classList.add("modal-open");
+  }
+
+  function hideModal(){
+    document.getElementById("modalBackdrop").classList.add("hidden");
+    document.body.classList.remove("modal-open");
+  }
+
+  function closeModal(event){
+    if(event.target.id === "modalBackdrop") hideModal();
+  }
+
+  function toast(message){
+    const box = document.getElementById("toastBox");
+    box.textContent = message;
+    box.classList.remove("hidden");
+    clearTimeout(window.__chartlensToast);
+    window.__chartlensToast = setTimeout(() => box.classList.add("hidden"),3000);
+  }
+
+  function escapeHtml(value){
+    return String(value)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  renderJournal();
+</script>
+
+</body>
+</html>
