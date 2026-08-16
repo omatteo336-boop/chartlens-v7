@@ -1,40 +1,124 @@
 export async function onRequestPost(context) {
   try {
-    const token = context.env?.HF_TOKEN;
+    const formData = await context.request.formData();
 
-    if (!token) {
-      return json({
-        error: "HF_TOKEN is not configured in Cloudflare Pages environment variables."
-      }, 500);
-    }
+    const instrument =
+      String(formData.get("instrument") || "").trim();
 
-    let body;
+    const analysisFocus =
+      String(formData.get("analysisFocus") || "").trim();
 
-    try {
-      body = await context.request.json();
-    } catch {
-      return json({
-        error: "Invalid request JSON."
+    const charts = formData.getAll("charts");
+
+    if (charts.length === 0) {
+      return response({
+        error: "Please upload at least one chart."
       }, 400);
     }
 
-    if (!body.image || !String(body.image).startsWith("data:image/")) {
-      return json({
-        error: "A valid chart image is required."
+    if (charts.length > 5) {
+      return response({
+        error: "A maximum of 5 charts can be analyzed at once."
       }, 400);
     }
 
-    const pairAsset = body.pairAsset || body.asset || "XAU/USD";
-    const timeframe = body.timeframe || "1 Minute";
+    const chartInformation = [];
 
-    const focus = Array.isArray(body.focus) && body.focus.length
-      ? body.focus.join(", ")
-      : "all visible chart features";
+    for (let i = 0; i < charts.length; i++) {
+      const chart = charts[i];
 
-    const system = `
-You are ChartLens V7, a careful professional chart-image analysis assistant.
+      if (!(chart instanceof File)) {
+        return response({
+          error: `Chart ${i + 1} is not a valid image file.`
+        }, 400);
+      }
 
-Analyze ONLY what is visibly supported by the supplied chart image.
+      if (chart.size > 10 * 1024 * 1024) {
+        return response({
+          error: `Chart ${i + 1} is larger than 10 MB.`
+        }, 400);
+      }
+
+      if (!chart.type.startsWith("image/")) {
+        return response({
+          error: `Chart ${i + 1} must be an image.`
+        }, 400);
+      }
+
+      const timeframe =
+        String(
+          formData.get(`timeframe_${i}`) || "Unknown"
+        ).trim();
+
+      chartInformation.push({
+        filename: chart.name,
+        timeframe,
+        mimeType: chart.type,
+        size: chart.size
+      });
+    }
+
+    /*
+      CHARTLENS AI ENGINE
+
+      The vision model will be connected here.
+
+      The model will eventually receive:
+      - all uploaded chart images
+      - timeframe for every image
+      - instrument
+      - selected analysis focus
+
+      It will return the seven-part educational analysis.
+    */
+
+    const analysis = {
+      status: "ready_for_ai",
+      instrument: instrument || "Not specified",
+      analysisFocus:
+        analysisFocus || "General chart analysis",
+
+      charts: chartInformation,
+
+      framework: [
+        "Higher-Timeframe Context",
+        "Market Structure",
+        "Price Location",
+        "Pattern Analysis",
+        "Momentum & Behaviour",
+        "Key Levels",
+        "Final Read"
+      ],
+
+      message:
+        "Chart received successfully. AI analysis engine is ready to be connected."
+    };
+
+    return response(analysis, 200);
+
+  } catch (error) {
+    return response({
+      error: "Unable to process the analysis request.",
+      details:
+        error instanceof Error
+          ? error.message
+          : "Unknown error"
+    }, 500);
+  }
+}
+
+function response(data, status = 200) {
+  return new Response(
+    JSON.stringify(data, null, 2),
+    {
+      status,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    }
+  );
+}Analyze ONLY what is visibly supported by the supplied chart image.
 
 Never invent:
 - prices
