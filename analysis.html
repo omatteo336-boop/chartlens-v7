@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Chyrix AI — Analysis</title>
+<style>
+:root{--orange:#f97316;--ink:#171717;--muted:#737373;--line:#e7e7e7;--bg:#fafafa;--green:#16a34a;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;font-size:12px;line-height:1.45}
+.page{max-width:980px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700}.brand img{width:27px;height:27px;object-fit:contain}
+.back{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 10px;text-decoration:none;color:var(--ink);font-size:11px}
+.grid{display:grid;grid-template-columns:1.45fr .8fr;gap:12px}.card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:13px}
+.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.eyebrow{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.title{font-size:18px;font-weight:750;margin:3px 0}.sub{color:var(--muted);font-size:11px}
+.decision{font-size:14px;font-weight:800;padding:6px 9px;border-radius:8px;background:#fff7ed;color:var(--orange);white-space:nowrap}
+.decision.buy,.decision.sell{background:#ecfdf3;color:var(--green)}.decision.weak{background:#fef2f2;color:var(--red)}
+.score{display:flex;align-items:center;gap:10px;margin-top:12px}.score strong{font-size:19px}.bar{height:5px;background:#eee;border-radius:99px;flex:1;overflow:hidden}.bar i{display:block;height:100%;width:85%;background:var(--orange)}
+.section-title{font-size:12px;font-weight:750;margin-bottom:8px;display:flex;align-items:center;gap:6px}.icon{width:20px;height:20px;border:1px solid #eee;border-radius:6px;display:grid;place-items:center}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{border:1px solid #eee;border-radius:8px;padding:9px}.metric b{display:block;font-size:10px;color:var(--muted);margin-bottom:2px}.metric strong{font-size:13px}
+.rows{display:grid;gap:7px}.row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #f0f0f0}.row:last-child{border-bottom:0}.label{color:var(--muted)}
+.notice{padding:9px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:11px}.footer{margin-top:12px;text-align:center;color:var(--muted);font-size:10px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="top">
+<div class="brand"><img src="assets/chyrix-logo.png" alt="Chyrix"><span>Chyrix AI</span></div>
+<a class="back" href="index.html">← Back to Analyzer</a>
+</header>
+<section class="grid">
+<div class="card">
+<div class="head"><div><div class="eyebrow">Chyrix Vision Intelligence</div><div class="title">Chart Analysis</div><div class="sub" id="meta">5M · Uploaded chart</div></div><div id="decision" class="decision">WAIT</div></div>
+<div class="score"><strong id="score">85/100</strong><div class="bar"><i id="scorebar"></i></div><span class="sub">Decision Quality</span></div>
+<div style="margin-top:14px" class="metrics">
+<div class="metric"><b>Structure</b><strong>Bullish</strong></div><div class="metric"><b>Key Levels</b><strong>Clear</strong></div><div class="metric"><b>Momentum</b><strong>Mixed</strong></div>
+</div>
+<div style="margin-top:14px"><div class="section-title"><span class="icon">◎</span>Market Context</div>
+<div class="rows"><div class="row"><span class="label">Trend</span><span>Bullish</span></div><div class="row"><span class="label">Patterns</span><span>No clear pattern confirmed</span></div><div class="row"><span class="label">Supply & Demand</span><span>Demand area visible</span></div><div class="row"><span class="label">Risk Context</span><span>Wait for confirmation</span></div></div></div>
+<div style="margin-top:12px" class="notice">Analysis is based only on visible chart evidence. Chyrix does not guarantee future price movement.</div>
+</div>
+<aside class="card"><div class="section-title"><span class="icon">◉</span>What matters now</div>
+<div class="rows"><div class="row"><span class="label">Biggest Gap</span><span>Higher-timeframe confirmation</span></div><div class="row"><span class="label">Worth a second look</span><span>Momentum alignment</span></div><div class="row"><span class="label">Thesis change</span><span>Break of key structure</span></div></div>
+<div style="margin-top:14px"><div class="section-title"><span class="icon">✦</span>Confidence</div><div class="rows"><div class="row"><span class="label">Overall</span><strong id="overall">85%</strong></div><div class="row"><span class="label">Evidence quality</span><strong>Good</strong></div></div></div>
+</aside>
+</section>
+<div class="footer">Educational analysis only · Chyrix AI</div>
+</main>
+<script>
+const p=new URLSearchParams(location.search), decision=(p.get('decision')||'WAIT').toUpperCase(), score=Math.max(0,Math.min(100,Number(p.get('score')||85))), timeframe=p.get('timeframe')||'5M';
+const d=document.getElementById('decision'); d.textContent=decision==='BAD'?'WEAK SETUP':decision; d.className='decision '+(decision==='BUY'||decision==='SELL'?'buy':decision==='BAD'?'weak':'');
+document.getElementById('score').textContent=score+'/100'; document.getElementById('scorebar').style.width=score+'%'; document.getElementById('meta').textContent=timeframe+' · Uploaded chart'; document.getElementById('overall').textContent=score+'%';
+</script>
+</body>
+</html>
